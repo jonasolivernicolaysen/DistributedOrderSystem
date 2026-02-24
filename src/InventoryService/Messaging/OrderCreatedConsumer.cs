@@ -57,20 +57,33 @@ namespace InventoryService.Messaging
 
             consumer.Received += async (model, ea) =>
             {
-                var body = ea.Body.ToArray();
-                var json = Encoding.UTF8.GetString(body);
-
-                var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
-                if (evt != null)
+                try
                 {
 
-                    await HandleEvent(evt);
+                    var body = ea.Body.ToArray();
+                    var json = Encoding.UTF8.GetString(body);
+
+                    var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
+                    if (evt != null)
+                    {
+
+                        await HandleEvent(evt);
+                    }
+                    _channel.BasicAck(ea.DeliveryTag, multiple: false);
+                }   
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
                 }
+
+
+
             };
 
             _channel.BasicConsume(
                 queue: QueueName,
-                autoAck: true,
+                autoAck: false,
                 consumer: consumer);
 
             return Task.CompletedTask;
