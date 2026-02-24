@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using InventoryService.Models;
+using InventoryService.Models.DTOs;
 
 namespace InventoryService.Data
 {
@@ -9,5 +10,6 @@ namespace InventoryService.Data
             : base(options) { }
 
         public DbSet<InventoryModel> Inventory { get; set; }
+        public DbSet<MessageDto> ProcessedMessages { get; set; }
     }
 }

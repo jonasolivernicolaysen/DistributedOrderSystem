@@ -1,4 +1,5 @@
 using InventoryService.Data;
+using InventoryService.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<InventoryDbContext>(options => 
     options.UseSqlite("Data source=inventory.db"));
+
+builder.Services.AddHostedService<OrderCreatedConsumer>();
 
 var app = builder.Build();
 
