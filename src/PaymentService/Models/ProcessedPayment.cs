@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OrderService.Models.DTOs
+namespace PaymentService.Models
 {
-    public class MessageDto
+    public class ProcessedPayment
     {
         [Key]
         public int Id { get; set; }

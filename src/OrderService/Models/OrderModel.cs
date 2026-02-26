@@ -13,6 +13,5 @@ namespace OrderService.Models
         [Required, Range(1, 100000)]
         public int Quantity { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime LastUpdatedAt { get; set; }
     }
 }

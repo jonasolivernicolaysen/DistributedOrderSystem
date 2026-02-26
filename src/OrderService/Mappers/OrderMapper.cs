@@ -12,8 +12,7 @@ namespace OrderService.Mappers
                 ProductId = dto.ProductId,
                 Status = OrderStatus.Pending,
                 Quantity = dto.Quantity,
-                CreatedAt = DateTime.UtcNow,
-                LastUpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
             };
         }
 

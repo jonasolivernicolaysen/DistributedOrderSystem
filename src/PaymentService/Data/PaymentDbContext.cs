@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PaymentService.Models;
+using SharedContracts;
 
 namespace PaymentService.Data
 {
@@ -9,5 +10,6 @@ namespace PaymentService.Data
             : base(options) { }
 
         public DbSet<PaymentModel> Payments { get; set; }
+        public DbSet<ProcessedOrder> ProcessedOrders { get; set; }
     }
 }

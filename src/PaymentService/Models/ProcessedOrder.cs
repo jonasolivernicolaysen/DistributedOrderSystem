@@ -1,6 +1,6 @@
-﻿namespace InventoryService.Models.DTOs
+﻿namespace PaymentService.Models
 {
-    public class MessageDto
+    public class ProcessedOrder
     {
         public int Id { get; set; }
         public Guid MessageId { get; set; }

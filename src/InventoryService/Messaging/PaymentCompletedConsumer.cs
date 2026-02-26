@@ -1,5 +1,4 @@
 ﻿using InventoryService.Data;
-using InventoryService.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using RabbitMQ.Client;
@@ -9,20 +8,20 @@ using System.Text;
 using System.Text.Json;
 using InventoryService.Models;
 using InventoryService.Messaging;
-using InventoryService.Models.DTOs;
+using SharedContracts;
 
 namespace InventoryService.Messaging
 {
-    public class OrderCreatedConsumer : BackgroundService
+    public class PaymentCompletedConsumer : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private IConnection _connection;
         private IModel _channel;
 
-        private const string ExchangeName = "orders";
+        private const string ExchangeName = "payments";
         private const string QueueName = "inventory-service";
 
-        public OrderCreatedConsumer(IServiceScopeFactory scopeFactory)
+        public PaymentCompletedConsumer(IServiceScopeFactory scopeFactory)
         {
             _scopeFactory = scopeFactory;
 
@@ -34,7 +33,7 @@ namespace InventoryService.Messaging
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // ensure exachange exists
+            // ensure exchange exists
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Fanout, durable: true);
 
             // create queue
@@ -63,12 +62,13 @@ namespace InventoryService.Messaging
                     var body = ea.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
 
-                    var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
-                    if (evt != null)
+                    var evt = JsonSerializer.Deserialize<PaymentCompletedEvent>(json);
+                    if (evt == null)
                     {
-
-                        await HandleEvent(evt);
+                        _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: false);
+                        return;
                     }
+                    await HandleEvent(evt);
                     _channel.BasicAck(ea.DeliveryTag, multiple: false);
                 }   
                 catch (Exception ex)
@@ -76,9 +76,6 @@ namespace InventoryService.Messaging
                     Console.WriteLine($"Error: {ex.Message}");
                     _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
                 }
-
-
-
             };
 
             _channel.BasicConsume(
@@ -89,7 +86,7 @@ namespace InventoryService.Messaging
             return Task.CompletedTask;
         }
 
-        private async Task HandleEvent(OrderCreatedEvent evt)
+        private async Task HandleEvent(PaymentCompletedEvent evt)
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
@@ -100,10 +97,11 @@ namespace InventoryService.Messaging
             if (alreadyProcessed)
             {
                 // message has already been processed
-                Console.WriteLine("duplicate message ignored");
+                Console.WriteLine("message has already been processed");
                 return;
             }
 
+            // update inventory
             var item = await db.Inventory
                 .FirstOrDefaultAsync(item => item.ProductId == evt.ProductId);
 
@@ -112,14 +110,21 @@ namespace InventoryService.Messaging
                 item = new InventoryModel
                 {
                     ProductId = evt.ProductId,
+                    // stock == 100 for simplicity, this is outside scope of this project
                     Stock = 100
                 };
 
                 db.Inventory.Add(item);
             }
+
+            if (item.Stock < evt.Quantity)
+            {
+                Console.WriteLine("Not enough stock");
+                return;
+            }
             item.Stock -= evt.Quantity;
 
-            db.ProcessedMessages.Add(new MessageDto
+            db.ProcessedMessages.Add(new ProcessedPayment
             {
                 MessageId = evt.MessageId,
                 ProcessedAt = DateTime.UtcNow

@@ -3,7 +3,8 @@ using OrderService.Data;
 using OrderService.Messaging;
 using OrderService.Models.DTOs;
 using OrderService.Mappers;
-using OrderService.Events;
+using SharedContracts;
+using System.Text.Json.Serialization;
 
 namespace OrderService.Controllers
 {
@@ -12,10 +13,10 @@ namespace OrderService.Controllers
     public class OrderController : ControllerBase
     {
         private readonly OrderDbContext _context;
-        private readonly RabbitMQPublisher _publisher;
+        private readonly OrderPublisher _publisher;
         public OrderController(
             OrderDbContext context,
-            RabbitMQPublisher publisher)
+            OrderPublisher publisher)
         {
             _context = context;
             _publisher = publisher;
@@ -34,12 +35,15 @@ namespace OrderService.Controllers
             {
                 OrderId = order.OrderId,
                 ProductId = order.ProductId,
-                Quantity = order.Quantity
+                Quantity = order.Quantity,
+                PaymentId = order.PaymentId
             };
 
             _publisher.Publish(evt);
 
-            return Ok(order);
+            return Ok(new CreateOrderResponseDto { 
+                PaymentId = order.PaymentId
+            });
         } 
     }
 }

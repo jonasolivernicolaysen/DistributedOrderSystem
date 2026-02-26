@@ -5,13 +5,13 @@ using System.Text.Json;
 
 namespace OrderService.Messaging
 {
-    public class RabbitMQPublisher : IDisposable
+    public class OrderPublisher : IDisposable
     {
         private readonly IConnection _connection;
         private readonly RabbitMQ.Client.IModel _channel;
         private const string ExchangeName = "orders";
 
-        public RabbitMQPublisher()
+        public OrderPublisher()
         {
             var factory = new ConnectionFactory()
             {

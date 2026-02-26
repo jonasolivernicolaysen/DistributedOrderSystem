@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<InventoryDbContext>(options => 
     options.UseSqlite("Data source=inventory.db"));
 
-builder.Services.AddHostedService<OrderCreatedConsumer>();
+builder.Services.AddHostedService<PaymentCompletedConsumer>();
 
 var app = builder.Build();
 
