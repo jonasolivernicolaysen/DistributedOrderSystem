@@ -15,7 +15,7 @@ namespace PaymentService.Services
             _context = context;
         }
 
-        public async Task<PaymentModel> ProcessOrderPayment(PaymentDto model)
+        public async Task<(PaymentModel payment, bool shouldBeProcessed)> ProcessOrderPayment(PaymentDto model)
         {
             // ignores checking if account number exists or has the neccessary balance, this is outside scope
 
@@ -26,7 +26,7 @@ namespace PaymentService.Services
                 throw new Exception($"Payment with id {model.PaymentId} not found");
 
             if (payment.Status == PaymentStatus.Completed)
-                return payment;
+                return (payment, false);
 
             payment.Status = PaymentStatus.Completed;
             payment.PaidAt = DateTime.UtcNow;
@@ -34,7 +34,7 @@ namespace PaymentService.Services
             
             await _context.SaveChangesAsync();
 
-            return payment;
+            return (payment, true);
         }
     }
 }

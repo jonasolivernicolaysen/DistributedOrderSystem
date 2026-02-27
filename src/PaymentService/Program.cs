@@ -16,7 +16,7 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
     options.UseSqlite("Data source=payments.db"));
 
 builder.Services.AddScoped<PaymentLogic>();
-builder.Services.AddSingleton<OrderCreatedConsumer>();
+builder.Services.AddHostedService<OrderCreatedConsumer>();
 builder.Services.AddSingleton<PaymentPublisher>();
 
 

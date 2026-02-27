@@ -27,18 +27,20 @@ namespace PaymentService.Controllers
         [HttpPost]
         public async Task<IActionResult> Pay(PaymentDto model)
         {
-            var payment = await _paymentLogic.ProcessOrderPayment(model);
+            var (payment, shouldBeProcessed) = await _paymentLogic.ProcessOrderPayment(model);
 
-            // publish event 
-            var evt = new PaymentCompletedEvent
+            // publish event if not already published
+            if (shouldBeProcessed)
             {
-                OrderId = payment.OrderId,
-                PaymentId = payment.PaymentId,
-                ProductId = payment.ProductId,
-                Quantity = payment.Quantity
-            };
-
-            _publisher.Publish(evt);
+                var evt = new PaymentCompletedEvent
+                {
+                    OrderId = payment.OrderId,
+                    PaymentId = payment.PaymentId,
+                    ProductId = payment.ProductId,
+                    Quantity = payment.Quantity
+                };
+                _publisher.Publish(evt);
+            }
 
             return Ok(payment);
         }
