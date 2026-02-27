@@ -1,5 +1,7 @@
 using PaymentService.Data;
 using Microsoft.EntityFrameworkCore;
+using PaymentService.Services;
+using PaymentService.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<PaymentDbContext>(options => 
     options.UseSqlite("Data source=payments.db"));
+
+builder.Services.AddScoped<PaymentLogic>();
+builder.Services.AddSingleton<OrderCreatedConsumer>();
+builder.Services.AddSingleton<PaymentPublisher>();
 
 
 var app = builder.Build();

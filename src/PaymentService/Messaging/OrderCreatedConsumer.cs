@@ -117,12 +117,12 @@ namespace PaymentService.Messaging
 
             try
             {
-            db.Payments.Add(payment);
-            db.ProcessedOrders.Add(processedOrder);
+                db.Payments.Add(payment);
+                db.ProcessedOrders.Add(processedOrder);
 
-            await db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             } 
-            catch (DbUpdateException ex)
+                catch (DbUpdateException ex)
             {
                 Console.WriteLine(ex);
             }
