@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using PaymentService.Data;
 using PaymentService.Models;
 using PaymentService.Models.DTOs;
+using SharedContracts;
+using System.Text.Json;
 
 namespace PaymentService.Services
 {
@@ -31,7 +33,24 @@ namespace PaymentService.Services
             payment.Status = PaymentStatus.Completed;
             payment.PaidAt = DateTime.UtcNow;
             payment.PayingAccount = model.PayingAccount;
-            
+
+            var evt = new PaymentCompletedEvent // orderid paymentid prodcutid quanitty
+            {
+                OrderId = payment.OrderId,
+                PaymentId = payment.PaymentId,
+                ProductId = payment.ProductId,
+                Quantity = payment.Quantity
+            };
+
+            _context.OutBoxMessages.Add(new OutBoxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = nameof(PaymentCompletedEvent),
+                Payload = JsonSerializer.Serialize(evt),
+                CreatedAt = DateTime.UtcNow,
+                Processed = false
+            });
+
             await _context.SaveChangesAsync();
 
             return (payment, true);
