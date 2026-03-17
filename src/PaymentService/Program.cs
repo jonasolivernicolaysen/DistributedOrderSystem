@@ -18,6 +18,7 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 builder.Services.AddScoped<PaymentLogic>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();
 builder.Services.AddSingleton<PaymentPublisher>();
+builder.Services.AddHostedService<OutboxProcessor>();
 
 
 var app = builder.Build();
