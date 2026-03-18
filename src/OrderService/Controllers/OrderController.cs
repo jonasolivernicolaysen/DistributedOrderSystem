@@ -13,10 +13,10 @@ namespace OrderService.Controllers
     public class OrderController : ControllerBase
     {
         private readonly OrderDbContext _context;
-        private readonly OrderPublisher _publisher;
+        private readonly RabbitMQPublisher _publisher;
         public OrderController(
             OrderDbContext context,
-            OrderPublisher publisher)
+            RabbitMQPublisher publisher)
         {
             _context = context;
             _publisher = publisher;
@@ -31,7 +31,7 @@ namespace OrderService.Controllers
             await _context.SaveChangesAsync();
 
             // publish event
-            var evt = new OrderCreatedEvent
+            var orderCreatedEvent = new OrderCreatedEvent
             {
                 OrderId = order.OrderId,
                 ProductId = order.ProductId,
@@ -39,7 +39,7 @@ namespace OrderService.Controllers
                 PaymentId = order.PaymentId
             };
 
-            _publisher.Publish(evt);
+            _publisher.Publish(orderCreatedEvent, "orders");
 
             return Ok(new CreateOrderResponseDto { 
                 PaymentId = order.PaymentId

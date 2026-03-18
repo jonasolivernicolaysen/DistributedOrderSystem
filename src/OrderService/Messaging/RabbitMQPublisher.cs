@@ -5,13 +5,12 @@ using System.Text.Json;
 
 namespace OrderService.Messaging
 {
-    public class OrderPublisher : IDisposable
+    public class RabbitMQPublisher : IMessagePublisher, IDisposable
     {
         private readonly IConnection _connection;
         private readonly RabbitMQ.Client.IModel _channel;
-        private const string ExchangeName = "orders";
 
-        public OrderPublisher()
+        public RabbitMQPublisher()
         {
             var factory = new ConnectionFactory()
             {
@@ -21,20 +20,20 @@ namespace OrderService.Messaging
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-
-            _channel.ExchangeDeclare(
-                exchange: ExchangeName,
-                type: ExchangeType.Fanout,
-                durable: true);
         }
 
-        public void Publish<T>(T message)
+        public void Publish<T>(T message, string exchangeName)
         {
+            _channel.ExchangeDeclare(
+                exchange: exchangeName,
+                type: ExchangeType.Fanout,
+                durable: true);
+
             var json = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(json);
 
             _channel.BasicPublish(
-                exchange: ExchangeName,
+                exchange: exchangeName,
                 routingKey: "",
                 basicProperties: null,
                 body: body);

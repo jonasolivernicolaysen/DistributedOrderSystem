@@ -13,7 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<OrderDbContext>(options => 
     options.UseSqlite("Data source=orders.db"));
-builder.Services.AddSingleton<OrderPublisher>();
+builder.Services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
 
 
 var app = builder.Build();

@@ -2,6 +2,7 @@ using PaymentService.Data;
 using Microsoft.EntityFrameworkCore;
 using PaymentService.Services;
 using PaymentService.Messaging;
+using OrderService.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,7 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 
 builder.Services.AddScoped<PaymentLogic>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();
-builder.Services.AddSingleton<PaymentPublisher>();
+builder.Services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 
 

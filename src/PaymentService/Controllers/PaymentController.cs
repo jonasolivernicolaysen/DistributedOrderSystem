@@ -13,11 +13,11 @@ namespace PaymentService.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly PaymentLogic _paymentLogic;
-        private readonly PaymentPublisher _publisher;
+        private readonly RabbitMQPublisher _publisher;
 
         public PaymentController(
-            PaymentLogic paymentLogic, 
-            PaymentPublisher publisher)
+            PaymentLogic paymentLogic,
+            RabbitMQPublisher publisher)
         {
             _paymentLogic = paymentLogic;
             _publisher = publisher;
@@ -29,17 +29,17 @@ namespace PaymentService.Controllers
         {
             var (payment, shouldBeProcessed) = await _paymentLogic.ProcessOrderPayment(model);
 
-            // publish event if not already published
+            // publish event only if not already published
             if (shouldBeProcessed)
             {
-                var evt = new PaymentCompletedEvent
+                var paymentCompletedEvent = new PaymentCompletedEvent
                 {
                     OrderId = payment.OrderId,
                     PaymentId = payment.PaymentId,
                     ProductId = payment.ProductId,
                     Quantity = payment.Quantity
                 };
-                _publisher.Publish(evt);
+                _publisher.Publish(paymentCompletedEvent, "payments");
             }
 
             return Ok(payment);

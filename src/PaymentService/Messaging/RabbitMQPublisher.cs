@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
+using OrderService.Messaging;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
 namespace PaymentService.Messaging
 {
-    public class PaymentPublisher : IDisposable
+    public class RabbitMQPublisher : IMessagePublisher, IDisposable
     {
         private readonly IConnection _connection;
         private readonly RabbitMQ.Client.IModel _channel;
-        private const string ExchangeName = "payments";
 
-        public PaymentPublisher()
+        public RabbitMQPublisher()
         {
             var factory = new ConnectionFactory()
             {
@@ -21,20 +21,20 @@ namespace PaymentService.Messaging
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-
-            _channel.ExchangeDeclare(
-                exchange: ExchangeName,
-                type: ExchangeType.Fanout,
-                durable: true);
         }
 
-        public void Publish<T>(T message)
+        public void Publish<T>(T message, string exchangeName)
         {
+            _channel.ExchangeDeclare(
+                exchange: exchangeName,
+                type: ExchangeType.Fanout,
+                durable: true);
+
             var json = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(json);
 
             _channel.BasicPublish(
-                exchange: ExchangeName,
+                exchange: exchangeName,
                 routingKey: "",
                 basicProperties: null,
                 body: body);

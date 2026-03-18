@@ -15,11 +15,11 @@ namespace PaymentService.Messaging
     public class OutboxProcessor : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly PaymentPublisher _publisher;
+        private readonly RabbitMQPublisher _publisher;
 
         public OutboxProcessor(
             IServiceScopeFactory scopeFactory,
-            PaymentPublisher publisher)
+            RabbitMQPublisher publisher)
         {
             _scopeFactory = scopeFactory;
             _publisher = publisher; 
@@ -40,10 +40,10 @@ namespace PaymentService.Messaging
                 {
                     try
                     {
-                        var evt = JsonSerializer.Deserialize<PaymentCompletedEvent>(msg.Payload);
-                        if (evt != null)
+                        var PaymentCompletedEvent = JsonSerializer.Deserialize<PaymentCompletedEvent>(msg.Payload);
+                        if (PaymentCompletedEvent != null)
                         {
-                            _publisher.Publish(evt);
+                            _publisher.Publish(PaymentCompletedEvent, "payments");
                             msg.Processed = true;
                         }
                     }
