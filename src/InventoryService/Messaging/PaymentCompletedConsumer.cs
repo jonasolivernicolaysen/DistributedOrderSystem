@@ -63,6 +63,8 @@ namespace InventoryService.Messaging
                     var json = Encoding.UTF8.GetString(body);
 
                     var evt = JsonSerializer.Deserialize<PaymentCompletedEvent>(json);
+
+                    Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                     if (evt == null)
                     {
                         _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: false);
@@ -110,7 +112,7 @@ namespace InventoryService.Messaging
                 item = new InventoryModel
                 {
                     ProductId = evt.ProductId,
-                    // stock == 100 for simplicity, this is outside scope of this project
+                    // stock == 100 for simplicity, this is outside the scope of this project
                     Stock = 100
                 };
 

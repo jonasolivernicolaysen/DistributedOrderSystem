@@ -39,7 +39,6 @@ namespace PaymentService.Controllers
                     ProductId = payment.ProductId,
                     Quantity = payment.Quantity
                 };
-                _publisher.Publish(paymentCompletedEvent, "payments");
             }
 
             return Ok(payment);
