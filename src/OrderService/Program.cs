@@ -1,6 +1,8 @@
 using OrderService.Data;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Messaging;
+using OrderService.Services;
+using OrderService.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +15,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<OrderDbContext>(options => 
     options.UseSqlite("Data source=orders.db"));
-builder.Services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
+builder.Services.AddSingleton<RabbitMQPublisher>();
+builder.Services.AddHostedService<OutboxProcessor>();
+builder.Services.AddScoped<OrderLogic>();
 
 
 var app = builder.Build();

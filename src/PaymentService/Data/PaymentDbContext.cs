@@ -11,6 +11,6 @@ namespace PaymentService.Data
 
         public DbSet<PaymentModel> Payments { get; set; }
         public DbSet<ProcessedOrder> ProcessedOrders { get; set; }
-        public DbSet<OutBoxMessage> OutBoxMessages { get; set; }
+        public DbSet<OutboxMessage> OutboxMessages { get; set; }
     }
 }

@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OrderService.Data;
-using OrderService.Messaging;
-using OrderService.Models.DTOs;
 using OrderService.Mappers;
+using OrderService.Messaging;
+using OrderService.Models;
+using OrderService.Models.DTOs;
+using OrderService.Services;
 using SharedContracts;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace OrderService.Controllers
@@ -14,32 +17,21 @@ namespace OrderService.Controllers
     {
         private readonly OrderDbContext _context;
         private readonly RabbitMQPublisher _publisher;
+        private readonly OrderLogic _orderLogic;
         public OrderController(
             OrderDbContext context,
-            RabbitMQPublisher publisher)
+            RabbitMQPublisher publisher,
+            OrderLogic orderLogic)
         {
             _context = context;
             _publisher = publisher;
+            _orderLogic = orderLogic;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrderDto dto)
         {
-            var order = OrderMapper.ToOrderModel(dto);
-            _context.Add(order);
-
-            await _context.SaveChangesAsync();
-
-            // publish event
-            var orderCreatedEvent = new OrderCreatedEvent
-            {
-                OrderId = order.OrderId,
-                ProductId = order.ProductId,
-                Quantity = order.Quantity,
-                PaymentId = order.PaymentId
-            };
-
-            _publisher.Publish(orderCreatedEvent, "orders");
+            var order = await _orderLogic.ProcessOrderCreation(dto);
 
             return Ok(new CreateOrderResponseDto { 
                 PaymentId = order.PaymentId

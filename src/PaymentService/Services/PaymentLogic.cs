@@ -34,7 +34,7 @@ namespace PaymentService.Services
             payment.PaidAt = DateTime.UtcNow;
             payment.PayingAccount = model.PayingAccount;
 
-            var evt = new PaymentCompletedEvent // orderid paymentid prodcutid quanitty
+            var evt = new PaymentCompletedEvent 
             {
                 OrderId = payment.OrderId,
                 PaymentId = payment.PaymentId,
@@ -42,7 +42,7 @@ namespace PaymentService.Services
                 Quantity = payment.Quantity
             };
 
-            _context.OutBoxMessages.Add(new OutBoxMessage
+            _context.OutboxMessages.Add(new OutboxMessage
             {
                 Id = Guid.NewGuid(),
                 Type = nameof(PaymentCompletedEvent),

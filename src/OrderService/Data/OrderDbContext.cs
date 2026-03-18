@@ -9,5 +9,6 @@ namespace OrderService.Data
             : base(options) { }
 
         public DbSet<OrderModel> Models { get; set; }
+        public DbSet<OutboxMessage> OutboxMessages { get; set; }
     }
 }

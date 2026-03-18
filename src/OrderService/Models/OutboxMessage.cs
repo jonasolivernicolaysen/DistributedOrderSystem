@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PaymentService.Models
+namespace OrderService.Models
 {
     public class OutboxMessage
     {

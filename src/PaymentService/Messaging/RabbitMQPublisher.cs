@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace PaymentService.Messaging
 {
-    public class RabbitMQPublisher : IMessagePublisher, IDisposable
+    public class RabbitMQPublisher : IDisposable
     {
         private readonly IConnection _connection;
         private readonly RabbitMQ.Client.IModel _channel;

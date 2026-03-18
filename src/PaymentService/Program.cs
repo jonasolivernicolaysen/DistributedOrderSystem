@@ -18,7 +18,7 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 
 builder.Services.AddScoped<PaymentLogic>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();
-builder.Services.AddSingleton<IMessagePublisher, RabbitMQPublisher>();
+builder.Services.AddSingleton<RabbitMQPublisher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 
 

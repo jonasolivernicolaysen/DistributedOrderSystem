@@ -1,17 +1,10 @@
-﻿using PaymentService.Data;
-using PaymentService.Messaging;
-using PaymentService.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using SharedContracts;
-using System.Diagnostics;
-using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderService.Data;
 using System.Text.Json;
-using OrderService.Messaging;
+using OrderService.Models;
+using SharedContracts;
 
-namespace PaymentService.Messaging
+namespace OrderService.Messaging
 {
     public class OutboxProcessor : BackgroundService
     {
@@ -31,7 +24,7 @@ namespace PaymentService.Messaging
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = _scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
 
                 var messages = await db.OutboxMessages
                     .Where(m => !m.Processed)
@@ -44,11 +37,11 @@ namespace PaymentService.Messaging
                         // using switch in case outboxprocessor should take multiple types in the future
                         switch (msg.Type)
                         {
-                            case nameof(PaymentCompletedEvent):
-                                var paymentCompletedEvent = JsonSerializer.Deserialize<PaymentCompletedEvent>(msg.Payload);
-                                if (paymentCompletedEvent != null)
+                            case nameof(OrderCreatedEvent):
+                                var orderCreatedEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(msg.Payload);
+                                if (orderCreatedEvent != null)
                                 {
-                                    _publisher.Publish(paymentCompletedEvent, "payments");
+                                    _publisher.Publish(orderCreatedEvent, "orders");
                                     msg.Processed = true;
                                 }
                                 break;
