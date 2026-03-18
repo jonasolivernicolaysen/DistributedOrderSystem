@@ -28,19 +28,6 @@ namespace PaymentService.Controllers
         public async Task<IActionResult> Pay(PaymentDto model)
         {
             var (payment, shouldBeProcessed) = await _paymentLogic.ProcessOrderPayment(model);
-
-            // publish event only if not already published
-            if (shouldBeProcessed)
-            {
-                var paymentCompletedEvent = new PaymentCompletedEvent
-                {
-                    OrderId = payment.OrderId,
-                    PaymentId = payment.PaymentId,
-                    ProductId = payment.ProductId,
-                    Quantity = payment.Quantity
-                };
-            }
-
             return Ok(payment);
         }
     }
