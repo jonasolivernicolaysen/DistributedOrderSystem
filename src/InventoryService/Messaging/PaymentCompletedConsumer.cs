@@ -206,7 +206,6 @@ namespace InventoryService.Messaging
                     .Sum(d => Convert.ToInt32(d["count"]));
             }
             return 0;
-
         }
     }
 }

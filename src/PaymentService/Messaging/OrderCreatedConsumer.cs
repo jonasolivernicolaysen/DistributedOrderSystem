@@ -33,20 +33,59 @@ namespace PaymentService.Messaging
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // ensure exchange exists
+            // declare main exchange and queue and bind queue to exchange
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Fanout, durable: true);
 
-            // create queue
+            var mainQueueArgs = new Dictionary<string, object>
+            {
+                {"x-dead-letter-exchange", "payments-retry" },
+                {"x-dead-letter-routing-key", "retry" }
+            };
+
             _channel.QueueDeclare(
                 queue: QueueName,
                 durable: true,
                 exclusive: false,
-                autoDelete: false);
+                autoDelete: false,
+                arguments: mainQueueArgs);
 
-            // bind queue to exchange
             _channel.QueueBind(
                 queue: QueueName,
                 exchange: ExchangeName,
+                routingKey: "");
+
+            // declare retry exchange and queue and bind queue to exchange
+            _channel.ExchangeDeclare("payments-retry", ExchangeType.Direct, durable: true);
+
+            var retryArgs = new Dictionary<string, object>
+            {
+                {"x-message-ttl", 10000 },
+                {"x-dead-letter-exchange", "orders"}
+            };
+
+            _channel.QueueDeclare(
+                "payments-retry-10s",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: retryArgs);
+
+            _channel.QueueBind(
+                queue: "payments-retry-10s",
+                exchange: "payments-retry",
+                routingKey: "retry");
+
+            // declare dlx and dlq
+            _channel.ExchangeDeclare("payments-dlx", ExchangeType.Fanout, durable: true);
+            _channel.QueueDeclare(
+                "payment-service-dlq",
+                durable: true,
+                exclusive: false,
+                autoDelete: false);
+
+            _channel.QueueBind(
+                queue: "payment-service-dlq",
+                exchange: "payments-dlx",
                 routingKey: "");
         }
 
@@ -58,14 +97,13 @@ namespace PaymentService.Messaging
             {
                 try
                 {
-
                     var body = ea.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
 
                     var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
                     if (evt == null)
                     {
-                        _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: false);
+                        _channel.BasicReject(ea.DeliveryTag, requeue: false);
                         return;
                     }
                     await HandleEvent(evt);
@@ -73,8 +111,24 @@ namespace PaymentService.Messaging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
-                    _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
+                    Console.WriteLine(ex.Message);
+
+                    var retryCount = GetRetryCount(ea);
+
+                    if (retryCount > 1)
+                    {
+                        _channel.BasicPublish(
+                            "payments-dlx",
+                            "",
+                            ea.BasicProperties,
+                            ea.Body);
+
+                        _channel.BasicAck(ea.DeliveryTag, multiple: false);
+                    }
+                    else
+                    {
+                        _channel.BasicReject(ea.DeliveryTag, requeue: false);
+                    }
                 }
             };
 
@@ -125,7 +179,22 @@ namespace PaymentService.Messaging
                 catch (DbUpdateException ex)
             {
                 Console.WriteLine(ex);
+                throw;
             }
+        }
+
+        private int GetRetryCount(BasicDeliverEventArgs ea)
+        {
+            if (ea.BasicProperties.Headers != null &&
+                ea.BasicProperties.Headers.TryGetValue("x-death", out var deathHeader))
+            {
+                var deaths = (List<object>)deathHeader;
+
+                return deaths
+                    .Select(d => (Dictionary<string, object>)d)
+                    .Sum(d => Convert.ToInt32(d["count"]));
+            }
+            return 0;
         }
     }
 }
