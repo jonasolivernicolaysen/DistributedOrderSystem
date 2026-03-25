@@ -9,6 +9,7 @@ using System.Text.Json;
 using InventoryService.Models;
 using InventoryService.Messaging;
 using SharedContracts;
+using System.Runtime.InteropServices;
 
 namespace InventoryService.Messaging
 {
@@ -18,8 +19,8 @@ namespace InventoryService.Messaging
         private IConnection _connection;
         private IModel _channel;
 
-        private const string ExchangeName = "payments";
         private const string QueueName = "inventory-service";
+        private const string ExchangeName = "payments";
 
         public PaymentCompletedConsumer(IServiceScopeFactory scopeFactory)
         {
@@ -33,21 +34,63 @@ namespace InventoryService.Messaging
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // ensure exchange exists
+            // declare main exchange and queue and bind queue to exchange
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Fanout, durable: true);
 
-            // create queue
+            var mainQueueArgs = new Dictionary<string, object>
+            {
+                {"x-dead-letter-exchange", "inventory-retry" },
+                {"x-dead-letter-routing-key", "retry" }
+            };
+
             _channel.QueueDeclare(
                 queue: QueueName,
                 durable: true,
                 exclusive: false,
-                autoDelete: false);
+                autoDelete: false,
+                arguments: mainQueueArgs);
 
-            // bind queue to exchange
             _channel.QueueBind(
                 queue: QueueName,
                 exchange: ExchangeName,
                 routingKey: "");
+
+
+            // declare retry exchange and queue and bind queue to exchange
+            _channel.ExchangeDeclare("inventory-retry", ExchangeType.Direct, durable: true);
+
+            var retryArgs = new Dictionary<string, object>
+            {
+                {"x-message-ttl", 10000 },
+                {"x-dead-letter-exchange", "payments"}
+            };
+
+            _channel.QueueDeclare(
+                "inventory-retry-10s",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: retryArgs);
+
+            _channel.QueueBind(
+                queue: "inventory-retry-10s",
+                exchange: "inventory-retry",
+                routingKey: "retry");
+
+            // declare dlx and dlq
+            _channel.ExchangeDeclare("inventory-dlx", ExchangeType.Fanout, durable: true);
+            _channel.QueueDeclare(
+                "inventory-service-dlq",
+                durable: true,
+                exclusive: false,
+                autoDelete: false);
+
+            _channel.QueueBind(
+                queue: "inventory-service-dlq",
+                exchange: "inventory-dlx",
+                routingKey: "");
+
+            
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -58,7 +101,6 @@ namespace InventoryService.Messaging
             {
                 try
                 {
-
                     var body = ea.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
 
@@ -67,7 +109,7 @@ namespace InventoryService.Messaging
                     Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                     if (evt == null)
                     {
-                        _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: false);
+                        _channel.BasicReject(ea.DeliveryTag, requeue: false);
                         return;
                     }
                     await HandleEvent(evt);
@@ -75,8 +117,25 @@ namespace InventoryService.Messaging
                 }   
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
-                    _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
+                    Console.WriteLine(ex.Message);
+
+                    var retryCount = GetRetryCount(ea);
+
+                    if (retryCount > 1)
+                    {
+                        _channel.BasicPublish(
+                            "inventory-dlx",
+                            "",
+                            ea.BasicProperties,
+                            ea.Body);
+
+                        _channel.BasicAck(ea.DeliveryTag, multiple: false);
+                    } 
+                    else
+                    {
+                        // send it to the retry queue
+                        _channel.BasicReject(ea.DeliveryTag, requeue: false);
+                    }
                 }
             };
 
@@ -133,6 +192,21 @@ namespace InventoryService.Messaging
             });
 
             await db.SaveChangesAsync();
+        }
+
+        private int GetRetryCount(BasicDeliverEventArgs ea) 
+        {
+            if (ea.BasicProperties.Headers != null &&
+                ea.BasicProperties.Headers.TryGetValue("x-death", out var deathHeader))
+            {
+                var deaths = (List<object>)deathHeader;
+
+                return deaths
+                    .Select(d => (Dictionary<string, object>)d)
+                    .Sum(d => Convert.ToInt32(d["count"]));
+            }
+            return 0;
+
         }
     }
 }
