@@ -100,7 +100,7 @@ namespace IdentityPlatformApi.Controllers
             });
         }
 
-        // refresh token issuance
+        // issue refresh token 
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh(RefreshTokenDto dto)
         {
@@ -127,41 +127,6 @@ namespace IdentityPlatformApi.Controllers
                 JwtToken = result.JwtToken,
                 RefreshToken = result.RefreshToken
             });
-        }
-
-
-
-        // check if authorization works
-        [HttpGet("protected")]
-        [Authorize]
-        public IActionResult Protected()
-        {
-            return Ok(new
-            {
-                Message = "JWT is working",
-                User = User.Identity!.Name ?? "no name",
-                Claims = User.Claims.Select(c => new { c.Type, c.Value })
-            });
-        }
-
-
-        // check if admin role works
-        [HttpGet("admin")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Admin()
-        {
-            return Ok("You are an admin");
-        }
-
-        [HttpGet("user_or_admin")]
-        [Authorize(Roles = "Admin,User")]
-
-
-        // check if roles work
-        public IActionResult AdminOrUser()
-        {
-            return Ok("You are an admin or an user");
-        }
-
+        }        
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderService.Data;
 using OrderService.Mappers;
 using OrderService.Messaging;
@@ -11,8 +12,9 @@ using System.Text.Json.Serialization;
 
 namespace OrderService.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("orders")]
+    [Route("api/orders")]
     public class OrderController : ControllerBase
     {
         private readonly OrderDbContext _context;

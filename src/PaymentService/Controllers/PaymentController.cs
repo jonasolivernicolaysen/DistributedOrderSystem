@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PaymentService.Data;
 using PaymentService.Messaging;
 using PaymentService.Models;
@@ -8,8 +9,9 @@ using SharedContracts;
 
 namespace PaymentService.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("payments")]
+    [Route("api/payments")]
     public class PaymentController : ControllerBase
     {
         private readonly PaymentLogic _paymentLogic;
