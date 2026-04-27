@@ -1,5 +1,4 @@
 ﻿using AuthService.Data;
-using AuthService.Data;
 using AuthService.Models;
 using AuthService.Models.DTOs;
 using AuthService.Services;

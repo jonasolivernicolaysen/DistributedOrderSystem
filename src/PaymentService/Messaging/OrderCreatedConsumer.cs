@@ -111,7 +111,7 @@ namespace PaymentService.Messaging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex);
 
                     var retryCount = GetRetryCount(ea);
 

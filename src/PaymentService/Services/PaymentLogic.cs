@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using PaymentService.Data;
+using PaymentService.Exceptions;
 using PaymentService.Models;
 using PaymentService.Models.DTOs;
 using SharedContracts;
@@ -25,7 +26,7 @@ namespace PaymentService.Services
                 .FirstOrDefaultAsync(p => p.PaymentId == model.PaymentId);
 
             if (payment == null)
-                throw new Exception($"Payment with id {model.PaymentId} not found");
+                throw new NotFoundException(model.PaymentId.ToString());
 
             if (payment.Status == PaymentStatus.Completed)
                 return (payment, false);

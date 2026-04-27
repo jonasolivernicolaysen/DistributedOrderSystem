@@ -1,4 +1,5 @@
 using InventoryService.Data;
+using InventoryService.Exceptions;
 using InventoryService.Messaging;
 using Microsoft.EntityFrameworkCore;
 

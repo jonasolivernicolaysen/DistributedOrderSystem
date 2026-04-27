@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductService.Data;
 using ProductService.Models;
+using ProductService.Exceptions;
 
 namespace ProductService.Services
 {
@@ -22,7 +23,8 @@ namespace ProductService.Services
         public async Task<Product> GetProductByIdAsync(Guid Id)
         {
             var product = await _context.Products.FindAsync(Id);
-            // null handling is done in controller
+            if (product == null)
+                throw new NotFoundException(Id.ToString());
             return product;            
         }
     }

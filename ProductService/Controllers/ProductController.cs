@@ -34,10 +34,7 @@ namespace ProductService.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductById(Guid Id)
         {
-            var product = await _productLogic.GetProductByIdAsync(Id);
-            if (product == null)
-                return NotFound($"Product with id {Id} not found.");
-            
+            var product = await _productLogic.GetProductByIdAsync(Id);            
             return Ok(product);
         }
     }
