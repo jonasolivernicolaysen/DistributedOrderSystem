@@ -55,7 +55,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddSingleton<RefreshTokenProvider>();
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlite("Data Source=products.db"));
+    options.UseSqlite("Data Source=auth.db"));
 
 builder.Services.AddProblemDetails();
 

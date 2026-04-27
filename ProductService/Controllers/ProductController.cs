@@ -15,10 +15,10 @@ namespace ProductService.Controllers
     [Authorize]
     [ApiController]
     [Route("api/products")]
-    public class OrderController : ControllerBase
+    public class ProductController : ControllerBase
     {
         private readonly ProductLogic _productLogic;
-        public OrderController(
+        public ProductController(
             ProductLogic productLogic)
         {
             _productLogic = productLogic;
@@ -31,7 +31,7 @@ namespace ProductService.Controllers
             return Ok(products);
         }
 
-        [HttpGet]
+        [HttpGet("{Id}")]
         public async Task<IActionResult> GetProductById(Guid Id)
         {
             var product = await _productLogic.GetProductByIdAsync(Id);            
