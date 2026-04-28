@@ -31,10 +31,24 @@ namespace ProductService.Controllers
             return Ok(products);
         }
 
-        [HttpGet("{Id}")]
-        public async Task<IActionResult> GetProductById(Guid Id)
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetProductById(Guid productId)
         {
-            var product = await _productLogic.GetProductByIdAsync(Id);            
+            var product = await _productLogic.GetProductByIdAsync(productId);            
+            return Ok(product);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateProductListing(CreateProductListingDto dto)
+        {
+            var product = await _productLogic.CreateProductListingAsync(dto);
+            return Ok(product);
+        }
+
+        [HttpPut("{productId}")]
+        public async Task<IActionResult> UpdateProductListing(Guid productId, UpdateProductListingDto dto)
+        {
+            var product = await _productLogic.UpdateProductListingAsync(productId, dto);
             return Ok(product);
         }
     }

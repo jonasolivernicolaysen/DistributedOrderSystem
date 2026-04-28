@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProductService.Models.DTOs
+namespace AuthService.Models.DTOs
 {
     public class CreateProductListingDto
     {

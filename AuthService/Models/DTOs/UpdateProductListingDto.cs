@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProductService.Models.DTOs
+namespace AuthService.Models.DTOs
 {
-    public class CreateProductListingDto
+    public class UpdateProductListingDto
     {
         [Required]
         public required string Name { get; set; }

@@ -9,7 +9,7 @@ namespace ProductService.Mappers
         {
             return new Product
             {
-                Id = Guid.NewGuid(),
+                ProductId = Guid.NewGuid(),
                 Name = dto.Name,
                 Description = dto.Description,
                 Price = dto.Price
