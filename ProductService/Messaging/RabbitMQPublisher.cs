@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Connections;
 using Microsoft.EntityFrameworkCore.Metadata;
 using ProductService.Messaging;
+using ProductService.Models;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
@@ -34,10 +35,14 @@ namespace ProductService.Messaging
             var json = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(json);
 
+            var properties = _channel.CreateBasicProperties();
+            properties.Persistent = true;
+            properties.Type = typeof(T).Name;
+
             _channel.BasicPublish(
                 exchange: exchangeName,
                 routingKey: "",
-                basicProperties: null,
+                basicProperties: properties,
                 body: body);
         }
 

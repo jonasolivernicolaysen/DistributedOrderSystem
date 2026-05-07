@@ -40,7 +40,7 @@ namespace ProductService.Messaging
                 {
                     try
                     {
-                        // using switch in case outboxprocessor should take multiple types in the future
+                        // using switch so outboxprocessor can handle multiple types 
                         switch (msg.Type)
                         {
                             case nameof(ProductCreatedEvent):
@@ -48,6 +48,15 @@ namespace ProductService.Messaging
                                 if (productCreatedEvent != null)
                                 {
                                     _publisher.Publish(productCreatedEvent, "products");
+                                    msg.Processed = true;
+                                }
+                                break;
+
+                            case nameof(ProductUpdatedEvent):
+                                var productUpdatedEvent = JsonSerializer.Deserialize<ProductUpdatedEvent>(msg.Payload);
+                                if (productUpdatedEvent != null)
+                                {
+                                    _publisher.Publish(productUpdatedEvent, "products");
                                     msg.Processed = true;
                                 }
                                 break;

@@ -21,7 +21,7 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlite("Data source=inventory.db"));
 
 builder.Services.AddHostedService<PaymentCompletedConsumer>();
-builder.Services.AddHostedService<ProductCreatedConsumer>();
+builder.Services.AddHostedService<ProductEventsConsumer>();
 builder.Services.AddScoped<InventoryLogic>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");

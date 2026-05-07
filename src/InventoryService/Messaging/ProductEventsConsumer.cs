@@ -12,7 +12,7 @@ using InventoryService.Exceptions;
 
 namespace InventoryService.Messaging
 {
-    public class ProductCreatedConsumer : BackgroundService
+    public class ProductEventsConsumer : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private IConnection _connection;
@@ -21,7 +21,7 @@ namespace InventoryService.Messaging
         private const string QueueName = "inventory-products";
         private const string ExchangeName = "products";
 
-        public ProductCreatedConsumer(IServiceScopeFactory scopeFactory)
+        public ProductEventsConsumer(IServiceScopeFactory scopeFactory)
         {
             _scopeFactory = scopeFactory;
 
@@ -99,16 +99,38 @@ namespace InventoryService.Messaging
                 {
                     var body = ea.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
+                    var eventType = ea.BasicProperties.Type;
 
-                    var evt = JsonSerializer.Deserialize<ProductCreatedEvent>(json);
-
-                    Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
-                    if (evt == null)
+                    switch (eventType)
                     {
-                        _channel.BasicReject(ea.DeliveryTag, requeue: false);
-                        return;
+                        case nameof(ProductCreatedEvent):
+                            {
+                                var evt = JsonSerializer.Deserialize<ProductCreatedEvent>(json);
+
+                                Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                                if (evt == null)
+                                {
+                                    _channel.BasicReject(ea.DeliveryTag, requeue: false);
+                                    return;
+                                }
+                                await HandleProductCreatedEvent(evt);
+                                break;
+                            }
+
+                        case nameof(ProductUpdatedEvent):
+                            {
+                                var evt = JsonSerializer.Deserialize<ProductUpdatedEvent>(json);
+
+                                Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                                if (evt == null)
+                                {
+                                    _channel.BasicReject(ea.DeliveryTag, requeue: false);
+                                    return;
+                                }
+                                await HandleProductUpdatedEvent(evt);
+                                break;
+                            }
                     }
-                    await HandleEvent(evt);
                     _channel.BasicAck(ea.DeliveryTag, multiple: false);
                 }
                 catch (Exception ex)
@@ -143,7 +165,7 @@ namespace InventoryService.Messaging
             return Task.CompletedTask;
         }
 
-        private async Task HandleEvent(ProductCreatedEvent evt)
+        private async Task HandleProductCreatedEvent(ProductCreatedEvent evt)
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
@@ -161,6 +183,31 @@ namespace InventoryService.Messaging
                 return;
 
             var product = ProductMapper.ProductCreatedEventToInventoryModel(evt);
+
+            var processedMessage = new ProcessedMessage
+            {
+                MessageId = evt.MessageId,
+                ProcessedAt = DateTime.UtcNow
+            };
+
+            // add product to db
+            db.Inventory.Add(product);
+            db.ProcessedMessages.Add(processedMessage);
+            await db.SaveChangesAsync();
+        }
+
+        private async Task HandleProductUpdatedEvent(ProductUpdatedEvent evt)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+
+            var alreadyProcessed = await db.ProcessedMessages
+                .AnyAsync(message => message.MessageId == evt.MessageId);
+
+            if (alreadyProcessed)
+                return;
+
+            var product = ProductMapper.ProductUpdatedEventToInventoryModel(evt);
 
             var processedMessage = new ProcessedMessage
             {

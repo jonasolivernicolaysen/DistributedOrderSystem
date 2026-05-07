@@ -10,6 +10,8 @@ namespace InventoryService.Mappers
             {
                 ProductId = model.ProductId,
                 ProductName = model.ProductName,
+                Description = model.Description,
+                Price = model.Price,
                 Stock = model.Stock
             };
         }

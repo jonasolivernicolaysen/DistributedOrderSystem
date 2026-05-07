@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SharedContracts
 {
-    public class ProductCreatedEvent
+    public class ProductUpdatedEvent
     {
         [Required]
         public Guid ProductId { get; set; }

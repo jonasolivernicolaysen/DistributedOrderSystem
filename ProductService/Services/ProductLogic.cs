@@ -83,6 +83,25 @@ namespace ProductService.Services
             product.Price = dto.Price;
 
             _context.Products.Update(product);
+
+            // add to outboxmessages 
+            var evt = new ProductUpdatedEvent
+            {
+                ProductId = product.ProductId,
+                ProductName = product.Name,
+                Description = product.Description,
+                Price = product.Price
+            };
+
+            _context.OutboxMessages.Add(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = nameof(ProductUpdatedEvent),
+                Payload = JsonSerializer.Serialize(evt),
+                CreatedAt = DateTime.UtcNow,
+                Processed = false
+            });
+
             await _context.SaveChangesAsync();
             return product;
         }
