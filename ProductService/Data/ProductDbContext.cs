@@ -9,5 +9,6 @@ namespace ProductService.Data
             : base(options) { }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<OutboxMessage> OutboxMessages { get; set; }
     }
 }

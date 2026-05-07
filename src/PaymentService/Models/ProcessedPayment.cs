@@ -2,7 +2,7 @@
 
 namespace PaymentService.Models
 {
-    public class ProcessedPayment
+    public class ProcessedMessage
     {
         [Key]
         public int Id { get; set; }

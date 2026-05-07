@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProductService.Data;
+using ProductService.Messaging;
 using ProductService.Middleware;
 using ProductService.Services;
 using System.Security.Claims;
@@ -15,6 +16,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<RabbitMQPublisher>();
+builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseSqlite("Data Source=products.db"));
 

@@ -31,6 +31,11 @@ namespace ProductService.Services
 
         public async Task<Product> CreateProductListingAsync(CreateProductListingDto dto)
         {
+            // check if product name is taken
+            var nameIsTaken = await _context.Products.AnyAsync(p => p.Name == dto.Name);
+            if (nameIsTaken)
+                throw new BadRequestException($"Product with name {dto.Name} already exists");
+
             var product = new Product
             {
                 ProductId = Guid.NewGuid(),
@@ -48,6 +53,11 @@ namespace ProductService.Services
             var product = await _context.Products.FindAsync(productId);
             if (product == null)
                 throw new NotFoundException($"Product with id {productId} was not found");
+
+            // check if updated product name is taken
+            var updatedNameIsTaken = await _context.Products.AnyAsync(p => p.Name == dto.Name);
+            if (updatedNameIsTaken)
+                throw new BadRequestException($"Product with name {dto.Name} already exists");
 
             product.Name = dto.Name;
             product.Description = dto.Description;

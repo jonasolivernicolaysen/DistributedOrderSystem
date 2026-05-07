@@ -1,6 +1,7 @@
 ﻿using InventoryService.Data;
 using InventoryService.Exceptions;
 using InventoryService.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryService.Services
 {
@@ -15,7 +16,7 @@ namespace InventoryService.Services
 
         public async Task<InventoryModel> UpdateProductStockAsync(Guid productId, int updatedStock)
         {
-            var product = await _context.Inventory.FindAsync(productId);
+            var product = await _context.Inventory.FirstOrDefaultAsync(p => p.ProductId == productId);
             if (product == null)
                 throw new NotFoundException($"Product with id {productId} not found");
 

@@ -20,14 +20,14 @@ namespace AuthService.Controllers
 
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateStock([FromBody] Guid productId, int updatedStock)
+        public async Task<IActionResult> UpdateStock([FromRoute] Guid productId, [FromBody] UpdateStockDto dto)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Put,
                 $"https://localhost:7248/api/inventory/{productId}");
 
             // forward the body
-            var json = JsonSerializer.Serialize(updatedStock);
+            var json = JsonSerializer.Serialize(dto);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             // forward jwt token

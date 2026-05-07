@@ -1,6 +1,6 @@
 ﻿namespace InventoryService.Models
 {
-    public class ProcessedPayment
+    public class ProcessedMessage
     {
         public int Id { get; set; }
         public Guid MessageId { get; set; }

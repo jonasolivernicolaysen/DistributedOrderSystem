@@ -9,8 +9,8 @@ namespace InventoryService.Mappers
             return new ProtectedInventoryModel
             {
                 ProductId = model.ProductId,
+                ProductName = model.ProductName,
                 Stock = model.Stock
-
             };
         }
     }

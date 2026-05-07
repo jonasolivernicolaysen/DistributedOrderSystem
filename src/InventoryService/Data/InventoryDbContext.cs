@@ -9,6 +9,6 @@ namespace InventoryService.Data
             : base(options) { }
 
         public DbSet<InventoryModel> Inventory { get; set; }
-        public DbSet<ProcessedPayment> ProcessedMessages { get; set; }
+        public DbSet<ProcessedMessage> ProcessedMessages { get; set; }
     }
 }

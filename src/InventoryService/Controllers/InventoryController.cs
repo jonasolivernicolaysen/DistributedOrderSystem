@@ -1,4 +1,5 @@
 ﻿using InventoryService.Mappers;
+using InventoryService.Models.DTOs;
 using InventoryService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,9 +19,9 @@ namespace InventoryService.Controllers
         }
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateStock(Guid productId, int updatedStock)
+        public async Task<IActionResult> UpdateStock([FromRoute] Guid productId, [FromBody] UpdateStockDto dto)
         {
-            var product = await _inventoryLogic.UpdateProductStockAsync(productId, updatedStock);
+            var product = await _inventoryLogic.UpdateProductStockAsync(productId, dto.UpdatedStock);
             return Ok(InventoryMapper.ToProtectedInventoryModel(product));
         }
     }
