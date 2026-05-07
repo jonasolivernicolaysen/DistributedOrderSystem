@@ -116,7 +116,7 @@ namespace InventoryService.Messaging
                                 await HandleProductCreatedEvent(evt);
                                 break;
                             }
-
+                            
                         case nameof(ProductUpdatedEvent):
                             {
                                 var evt = JsonSerializer.Deserialize<ProductUpdatedEvent>(json);
@@ -130,6 +130,8 @@ namespace InventoryService.Messaging
                                 await HandleProductUpdatedEvent(evt);
                                 break;
                             }
+                        default:
+                            throw new BadRequestException($"Unknown event type: {eventType}");
                     }
                     _channel.BasicAck(ea.DeliveryTag, multiple: false);
                 }
@@ -207,7 +209,15 @@ namespace InventoryService.Messaging
             if (alreadyProcessed)
                 return;
 
-            var product = ProductMapper.ProductUpdatedEventToInventoryModel(evt);
+            var existingProduct = await db.Inventory
+                .FirstOrDefaultAsync(p => p.ProductId == evt.ProductId);
+
+            if (existingProduct == null)
+                return;
+
+            existingProduct.ProductName = evt.ProductName;
+            existingProduct.Description = evt.Description;
+            existingProduct.Price = evt.Price;
 
             var processedMessage = new ProcessedMessage
             {
@@ -215,8 +225,6 @@ namespace InventoryService.Messaging
                 ProcessedAt = DateTime.UtcNow
             };
 
-            // add product to db
-            db.Inventory.Add(product);
             db.ProcessedMessages.Add(processedMessage);
             await db.SaveChangesAsync();
         }
