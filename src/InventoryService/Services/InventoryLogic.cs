@@ -1,5 +1,6 @@
 ﻿using InventoryService.Data;
 using InventoryService.Exceptions;
+using InventoryService.Mappers;
 using InventoryService.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,12 @@ namespace InventoryService.Services
             product.Stock = updatedStock;
             await _context.SaveChangesAsync();
             return product;
+        }
+
+        public async Task<List<InventoryModel>> GetProductsAsync()
+        {
+            var products = await _context.Inventory.ToListAsync();
+            return products;
         }
     }
 }

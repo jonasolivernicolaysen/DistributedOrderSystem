@@ -25,5 +25,11 @@ namespace InventoryService.Controllers
             return Ok(InventoryMapper.ToProtectedInventoryModel(product));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetProducts()
+        {
+            var inventory = await _inventoryLogic.GetProductsAsync();
+            return Ok(inventory);
+        }
     }
 }

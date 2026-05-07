@@ -40,5 +40,23 @@ namespace AuthService.Controllers
 
             return StatusCode((int)response.StatusCode, content);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetProducts()
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"https://localhost:7248/api/inventory/");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
     }
 }
