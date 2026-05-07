@@ -29,10 +29,12 @@ namespace InventoryService.Services
             return product;
         }
 
-        public async Task<List<InventoryModel>> GetProductsAsync()
+        public async Task<List<ProtectedInventoryModel>> GetProductsAsync()
         {
             var products = await _context.Inventory.ToListAsync();
-            return products;
+            return products
+                .Select(InventoryMapper.ToProtectedInventoryModel)
+                .ToList();
         }
     }
 }

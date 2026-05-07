@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductService.Data;
-using ProductService.Models;
 using ProductService.Exceptions;
+using ProductService.Models;
 using ProductService.Models.DTOs;
+using SharedContracts;
+using System.Text.Json;
 
 namespace ProductService.Services
 {
@@ -44,6 +46,23 @@ namespace ProductService.Services
                 Price = dto.Price
             };
             _context.Products.Add(product);
+
+            // add to outboxmessages 
+            var evt = new ProductCreatedEvent
+            {
+                ProductId = product.ProductId,
+                ProductName = product.Name
+            };
+
+            _context.OutboxMessages.Add(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = nameof(ProductCreatedEvent),
+                Payload = JsonSerializer.Serialize(evt),
+                CreatedAt = DateTime.UtcNow,
+                Processed = false
+            });
+
             await _context.SaveChangesAsync();
             return product;
         }

@@ -28,8 +28,8 @@ namespace InventoryService.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProducts()
         {
-            var inventory = await _inventoryLogic.GetProductsAsync();
-            return Ok(inventory);
+            var products = await _inventoryLogic.GetProductsAsync();
+            return Ok(products);
         }
     }
 }
