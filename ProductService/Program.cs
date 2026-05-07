@@ -17,12 +17,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<ProductLogic>();
 builder.Services.AddSingleton<RabbitMQPublisher>();
 builder.Services.AddHostedService<OutboxProcessor>();
+
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseSqlite("Data Source=products.db"));
 
-builder.Services.AddScoped<ProductLogic>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 

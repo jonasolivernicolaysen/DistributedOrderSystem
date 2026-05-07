@@ -24,5 +24,6 @@ namespace InventoryService.Controllers
             var product = await _inventoryLogic.UpdateProductStockAsync(productId, dto.UpdatedStock);
             return Ok(InventoryMapper.ToProtectedInventoryModel(product));
         }
+
     }
 }
