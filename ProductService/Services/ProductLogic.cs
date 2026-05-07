@@ -51,7 +51,9 @@ namespace ProductService.Services
             var evt = new ProductCreatedEvent
             {
                 ProductId = product.ProductId,
-                ProductName = product.Name
+                ProductName = product.Name,
+                Description = product.Description,
+                Price = dto.Price
             };
 
             _context.OutboxMessages.Add(new OutboxMessage
@@ -74,7 +76,9 @@ namespace ProductService.Services
                 throw new NotFoundException($"Product with id {productId} was not found");
 
             // check if updated product name is taken
-            var updatedNameIsTaken = await _context.Products.AnyAsync(p => p.Name == dto.Name);
+            // man kan ikke oppdatere ett produkt og gi det samme navn, må fikse dette
+
+            var updatedNameIsTaken = await _context.Products.AnyAsync(p => p.Name == dto.Name && p.ProductId != productId);
             if (updatedNameIsTaken)
                 throw new BadRequestException($"Product with name {dto.Name} already exists");
 
