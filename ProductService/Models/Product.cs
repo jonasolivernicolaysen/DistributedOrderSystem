@@ -11,5 +11,6 @@ namespace ProductService.Models
 
         [Range(0.01, 1000000)]
         public decimal Price { get; set; }
+        public string OwnerId { get; set; }
     }
 }

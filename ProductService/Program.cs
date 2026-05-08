@@ -24,6 +24,7 @@ builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseSqlite("Data Source=products.db"));
 
+builder.Services.AddHttpContextAccessor();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 

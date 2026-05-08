@@ -5,16 +5,21 @@ using ProductService.Models;
 using ProductService.Models.DTOs;
 using SharedContracts;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace ProductService.Services
 {
     public class ProductLogic
     {
         private readonly ProductDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProductLogic(ProductDbContext context)
+        public ProductLogic(
+            ProductDbContext context,
+            IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<List<Product>> GetProductsAsync()
@@ -38,12 +43,22 @@ namespace ProductService.Services
             if (nameIsTaken)
                 throw new BadRequestException($"Product with name {dto.Name} already exists");
 
+            var currentUserId = _httpContextAccessor
+                .HttpContext?
+                .User
+                .FindFirst(ClaimTypes.NameIdentifier)?
+                .Value;
+
+            if (currentUserId == null)
+                throw new UnauthorizedException("User must be authenticated to create a product listing");
+
             var product = new Product
             {
                 ProductId = Guid.NewGuid(),
                 Name = dto.Name,
                 Description = dto.Description,
-                Price = dto.Price
+                Price = dto.Price,
+                OwnerId = currentUserId
             };
             _context.Products.Add(product);
 

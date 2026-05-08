@@ -2,7 +2,7 @@
 {
     public enum Roles
     {
-        Admin,
+        ProductOwner,
         User
     }
 }
