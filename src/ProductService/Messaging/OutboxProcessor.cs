@@ -60,6 +60,15 @@ namespace ProductService.Messaging
                                     msg.Processed = true;
                                 }
                                 break;
+
+                            case nameof(ProductDeletedEvent):
+                                var productDeletedEvent = JsonSerializer.Deserialize<ProductDeletedEvent>(msg.Payload);
+                                if (productDeletedEvent != null)
+                                {
+                                    _publisher.Publish(productDeletedEvent, "products");
+                                    msg.Processed = true;
+                                }
+                                break;
                         }
                     }
                     catch (Exception ex)

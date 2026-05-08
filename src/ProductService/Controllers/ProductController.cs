@@ -51,5 +51,12 @@ namespace ProductService.Controllers
             var product = await _productLogic.UpdateProductListingAsync(productId, dto);
             return Ok(product);
         }
+
+        [HttpDelete("{productId}")]
+        public async Task<IActionResult> DeleteProductListing(Guid productId)
+        {
+            var product = await _productLogic.DeleteProductListingAsync(productId);
+            return Ok(product);
+        }
     }
 }

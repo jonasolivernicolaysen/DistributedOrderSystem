@@ -99,5 +99,23 @@ namespace AuthService.Controllers
 
             return StatusCode((int)response.StatusCode, content);
         }
+
+        [HttpDelete("{productId}")]
+        public async Task<IActionResult> DeleteListing(Guid productId)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                $"https://localhost:7165/api/products/{productId}");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
     }
 }

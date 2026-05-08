@@ -91,7 +91,6 @@ namespace ProductService.Services
                 throw new NotFoundException($"Product with id {productId} was not found");
 
             // check if updated product name is taken
-            // man kan ikke oppdatere ett produkt og gi det samme navn, må fikse dette
 
             var updatedNameIsTaken = await _context.Products.AnyAsync(p => p.Name == dto.Name && p.ProductId != productId);
             if (updatedNameIsTaken)
@@ -116,6 +115,31 @@ namespace ProductService.Services
             {
                 Id = Guid.NewGuid(),
                 Type = nameof(ProductUpdatedEvent),
+                Payload = JsonSerializer.Serialize(evt),
+                CreatedAt = DateTime.UtcNow,
+                Processed = false
+            });
+
+            await _context.SaveChangesAsync();
+            return product;
+        }
+
+        public async Task<Product> DeleteProductListingAsync(Guid productId)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null)
+                throw new NotFoundException($"Product with id {productId} was not found");
+
+            // add to outboxmessages 
+            var evt = new ProductDeletedEvent
+            {
+                ProductId = product.ProductId
+            };
+
+            _context.OutboxMessages.Add(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = nameof(ProductDeletedEvent),
                 Payload = JsonSerializer.Serialize(evt),
                 CreatedAt = DateTime.UtcNow,
                 Processed = false
