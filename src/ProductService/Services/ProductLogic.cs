@@ -90,6 +90,20 @@ namespace ProductService.Services
             if (product == null)
                 throw new NotFoundException($"Product with id {productId} was not found");
 
+            // check if current user is product owner 
+            var currentUserId = _httpContextAccessor
+                .HttpContext?
+                .User
+                .FindFirst(ClaimTypes.NameIdentifier)?
+                .Value;
+
+            if (currentUserId == null)
+                throw new UnauthorizedException("User must be authenticated to update a product listing");
+
+            if (product.OwnerId != currentUserId)
+                throw new UnauthorizedException("Cannot update other users' listings");
+
+
             // check if updated product name is taken
 
             var updatedNameIsTaken = await _context.Products.AnyAsync(p => p.Name == dto.Name && p.ProductId != productId);
@@ -130,11 +144,26 @@ namespace ProductService.Services
             if (product == null)
                 throw new NotFoundException($"Product with id {productId} was not found");
 
+            // check if current user is product owner
+            var currentUserId = _httpContextAccessor
+                .HttpContext?
+                .User
+                .FindFirst(ClaimTypes.NameIdentifier)?
+                .Value;
+
+            if (currentUserId == null)
+                throw new UnauthorizedException("User must be authenticated to delete a product listing");
+
+            if (product.OwnerId != currentUserId)
+                throw new UnauthorizedException("Cannot delete other users' listings");
+
             // add to outboxmessages 
             var evt = new ProductDeletedEvent
             {
                 ProductId = product.ProductId
             };
+
+            _context.Products.Remove(product);
 
             _context.OutboxMessages.Add(new OutboxMessage
             {

@@ -130,6 +130,19 @@ namespace InventoryService.Messaging
                                 await HandleProductUpdatedEvent(evt);
                                 break;
                             }
+                        case nameof(ProductDeletedEvent):
+                            {
+                                var evt = JsonSerializer.Deserialize<ProductDeletedEvent>(json);
+
+                                Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                                if (evt == null)
+                                {
+                                    _channel.BasicReject(ea.DeliveryTag, requeue: false);
+                                    return;
+                                }
+                                await HandleProductDeletedEvent(evt);
+                                break;
+                            }
                         default:
                             throw new BadRequestException($"Unknown event type: {eventType}");
                     }
@@ -218,6 +231,36 @@ namespace InventoryService.Messaging
             existingProduct.ProductName = evt.ProductName;
             existingProduct.Description = evt.Description;
             existingProduct.Price = evt.Price;
+
+            var processedMessage = new ProcessedMessage
+            {
+                MessageId = evt.MessageId,
+                ProcessedAt = DateTime.UtcNow
+            };
+
+            db.ProcessedMessages.Add(processedMessage);
+            await db.SaveChangesAsync();
+        }
+
+        private async Task HandleProductDeletedEvent(ProductDeletedEvent evt)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+
+            var alreadyProcessed = await db.ProcessedMessages
+                .AnyAsync(message => message.MessageId == evt.MessageId);
+
+            if (alreadyProcessed)
+                return;
+
+            var existingProduct = await db.Inventory
+                .FirstOrDefaultAsync(p => p.ProductId == evt.ProductId);
+
+            if (existingProduct == null)
+                return;
+
+            // removes product from db
+            db.Remove(existingProduct);
 
             var processedMessage = new ProcessedMessage
             {
