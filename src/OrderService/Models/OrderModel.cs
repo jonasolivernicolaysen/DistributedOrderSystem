@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RabbitMQ.Client;
+using System.ComponentModel.DataAnnotations;
 
 namespace OrderService.Models
 {
@@ -13,5 +14,6 @@ namespace OrderService.Models
         [Required, Range(1, 100000)]
         public int Quantity { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string UserId { get; set; }
     }
 }

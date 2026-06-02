@@ -5,14 +5,15 @@ namespace OrderService.Mappers
 {
     public static class OrderMapper
     {
-        public static OrderModel ToOrderModel(CreateOrderDto dto)
+        public static OrderModel ToOrderModel(CreateOrderDto dto, string userId)
         {
             return new OrderModel
             {
                 ProductId = dto.ProductId,
                 Status = OrderStatus.Pending,
                 Quantity = dto.Quantity,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                UserId = userId
             };
         }
 

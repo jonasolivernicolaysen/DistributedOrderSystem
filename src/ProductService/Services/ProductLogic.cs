@@ -6,6 +6,8 @@ using ProductService.Models.DTOs;
 using SharedContracts;
 using System.Text.Json;
 using System.Security.Claims;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.AspNetCore.Identity;
 
 namespace ProductService.Services
 {
@@ -13,6 +15,7 @@ namespace ProductService.Services
     {
         private readonly ProductDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        
 
         public ProductLogic(
             ProductDbContext context,

@@ -12,15 +12,21 @@ namespace PaymentService.Services
     public class PaymentLogic
     {
         private readonly PaymentDbContext _context;
+        private readonly HttpClient _httpClient;
 
-        public PaymentLogic(PaymentDbContext context)
+        public PaymentLogic(
+            PaymentDbContext context,
+            HttpClient httpClient)
         {
             _context = context;
+            _httpClient = httpClient;
         }
 
         public async Task<(PaymentModel payment, bool shouldBeProcessed)> ProcessOrderPayment(PaymentDto model)
         {
-            // ignores checking if account number exists or has the neccessary balance, this is outside scope
+            // call authservice withdraw endpoint here
+
+
 
             var payment = await _context.Payments
                 .FirstOrDefaultAsync(p => p.PaymentId == model.PaymentId);

@@ -7,6 +7,7 @@ using OrderService.Models;
 using OrderService.Models.DTOs;
 using OrderService.Services;
 using SharedContracts;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -33,7 +34,9 @@ namespace OrderService.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrderDto dto)
         {
-            var order = await _orderLogic.ProcessOrderCreation(dto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var order = await _orderLogic.ProcessOrderCreation(dto, userId);
 
             return Ok(new CreateOrderResponseDto { 
                 PaymentId = order.PaymentId

@@ -127,6 +127,18 @@ namespace IdentityPlatformApi.Controllers
                 JwtToken = result.JwtToken,
                 RefreshToken = result.RefreshToken
             });
-        }        
+        }
+
+        [HttpPost("withdraw")]
+        public async Task<IActionResult> Withdraw([FromBody] WithdrawDto dto)
+        {
+            var user = await _userService.WithdrawFundsAsync(dto);
+
+            return Ok(new
+            {
+                message = "Withdrawal successful",
+                balance = user.AccountBalance
+            });
+        }
     }
 }

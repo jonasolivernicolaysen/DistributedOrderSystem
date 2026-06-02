@@ -1,4 +1,5 @@
 ﻿using AuthService.Data;
+using AuthService.Exceptions;
 using AuthService.Models;
 using AuthService.Models.DTOs;
 using AuthService.Services;
@@ -156,5 +157,23 @@ namespace AuthService.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public async Task<User> WithdrawFundsAsync(WithdrawDto dto)
+        {
+            // find user
+            var user = await GetUserByUsername(dto.Username);
+            if (user == null)
+                throw new BadRequestException($"User with username {dto.Username} not found");
+
+            // verify user has enough balance
+            if (user.AccountBalance < dto.Amount)
+                throw new BadRequestException($"Insufficient funds. Current balance: {user.AccountBalance}");
+
+            // perform withdrawal
+            user.AccountBalance -= dto.Amount;
+
+            // save
+            await _userManager.UpdateAsync(user);
+            return user;
+        }
     }
 }

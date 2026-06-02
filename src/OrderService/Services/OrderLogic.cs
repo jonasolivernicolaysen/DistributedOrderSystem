@@ -15,9 +15,9 @@ namespace OrderService.Services
             _context = context;
         }
 
-        public async Task<OrderModel> ProcessOrderCreation(CreateOrderDto dto)
+        public async Task<OrderModel> ProcessOrderCreation(CreateOrderDto dto, string userId)
         {
-            var order = OrderMapper.ToOrderModel(dto);
+            var order = OrderMapper.ToOrderModel(dto, userId);
             _context.Models.Add(order);
 
             var orderCreatedEvent = new OrderCreatedEvent
