@@ -11,8 +11,8 @@ using PaymentService.Data;
 namespace PaymentService.Migrations
 {
     [DbContext(typeof(PaymentDbContext))]
-    [Migration("20260317153603_AddTableOutboxMessages")]
-    partial class AddTableOutboxMessages
+    [Migration("20260603182842_InitialCreateAfterDeletion")]
+    partial class InitialCreateAfterDeletion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ namespace PaymentService.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.24");
 
-            modelBuilder.Entity("PaymentService.Models.OutBoxMessage", b =>
+            modelBuilder.Entity("PaymentService.Models.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,7 +33,7 @@ namespace PaymentService.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Processes")
+                    b.Property<bool>("Processed")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Type")
@@ -42,7 +42,7 @@ namespace PaymentService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OutBoxMessages");
+                    b.ToTable("OutboxMessages");
                 });
 
             modelBuilder.Entity("PaymentService.Models.PaymentModel", b =>
@@ -71,6 +71,13 @@ namespace PaymentService.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double>("TotalAmount")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("PaymentId");
 

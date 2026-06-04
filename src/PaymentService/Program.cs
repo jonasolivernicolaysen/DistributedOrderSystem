@@ -25,6 +25,8 @@ builder.Services.AddHostedService<OrderCreatedConsumer>();
 builder.Services.AddSingleton<RabbitMQPublisher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 
+builder.Services.AddHttpContextAccessor();
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddAuthentication(options =>

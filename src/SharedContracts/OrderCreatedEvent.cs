@@ -13,5 +13,7 @@ namespace SharedContracts
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
         public Guid MessageId { get; set; } = Guid.NewGuid();
+        public required string UserId { get; set; }
+        public double UnitPrice { get; set; }
     }
 }

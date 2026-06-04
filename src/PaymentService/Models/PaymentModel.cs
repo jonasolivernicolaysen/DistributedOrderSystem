@@ -15,6 +15,7 @@ namespace PaymentService.Models
         public int ReceivingAccount { get; set; } = 1234567890; // account number of website owner
         public int PayingAccount { get; set; }
         public string UserId { get; set; }
+        public double TotalAmount { get; set; }
     }
 }
 

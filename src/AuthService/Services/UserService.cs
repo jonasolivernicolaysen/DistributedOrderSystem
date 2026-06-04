@@ -157,19 +157,19 @@ namespace AuthService.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<User> WithdrawFundsAsync(WithdrawDto dto)
+        public async Task<User> WithdrawFundsAsync(string userId, double amount)
         {
             // find user
-            var user = await GetUserByUsername(dto.Username);
+            var user = await GetUserById(userId);
             if (user == null)
-                throw new BadRequestException($"User with username {dto.Username} not found");
+                throw new BadRequestException($"User with id {userId} not found");
 
             // verify user has enough balance
-            if (user.AccountBalance < dto.Amount)
+            if (user.AccountBalance < amount)
                 throw new BadRequestException($"Insufficient funds. Current balance: {user.AccountBalance}");
 
             // perform withdrawal
-            user.AccountBalance -= dto.Amount;
+            user.AccountBalance -= amount;
 
             // save
             await _userManager.UpdateAsync(user);

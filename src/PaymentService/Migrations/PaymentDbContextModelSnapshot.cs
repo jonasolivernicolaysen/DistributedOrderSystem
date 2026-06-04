@@ -17,7 +17,7 @@ namespace PaymentService.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.24");
 
-            modelBuilder.Entity("PaymentService.Models.OutBoxMessage", b =>
+            modelBuilder.Entity("PaymentService.Models.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,7 +39,7 @@ namespace PaymentService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OutBoxMessages");
+                    b.ToTable("OutboxMessages");
                 });
 
             modelBuilder.Entity("PaymentService.Models.PaymentModel", b =>
@@ -68,6 +68,13 @@ namespace PaymentService.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double>("TotalAmount")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("PaymentId");
 

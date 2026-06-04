@@ -153,13 +153,17 @@ namespace PaymentService.Messaging
                 Console.WriteLine("Order already processed");
                 return;
             }
-
+            Console.WriteLine($"UnitPrice: {evt.UnitPrice}");
+            Console.WriteLine($"Quantity: {evt.Quantity}");
+            Console.WriteLine($"Total: {evt.UnitPrice * evt.Quantity}");
             var payment = new PaymentModel
             {
                 PaymentId = evt.PaymentId,
                 OrderId = evt.OrderId,
                 ProductId = evt.ProductId,
                 Quantity = evt.Quantity,
+                UserId = evt.UserId,
+                TotalAmount = evt.UnitPrice * evt.Quantity,
                 Status = PaymentStatus.Pending
             };
 

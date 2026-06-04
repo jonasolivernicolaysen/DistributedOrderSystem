@@ -132,7 +132,7 @@ namespace IdentityPlatformApi.Controllers
         [HttpPost("withdraw")]
         public async Task<IActionResult> Withdraw([FromBody] WithdrawDto dto)
         {
-            var user = await _userService.WithdrawFundsAsync(dto);
+            var user = await _userService.WithdrawFundsAsync(dto.UserId, dto.Amount);
 
             return Ok(new
             {

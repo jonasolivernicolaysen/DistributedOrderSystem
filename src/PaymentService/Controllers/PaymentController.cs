@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentService.Data;
+using PaymentService.Exceptions;
 using PaymentService.Messaging;
 using PaymentService.Models;
 using PaymentService.Models.DTOs;
 using PaymentService.Services;
 using SharedContracts;
+using System.Security.Claims;
 
 namespace PaymentService.Controllers
 {
@@ -27,9 +29,13 @@ namespace PaymentService.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Pay(PaymentDto model)
+        public async Task<IActionResult> Pay([FromBody] PaymentDto dto)
         {
-            var (payment, shouldBeProcessed) = await _paymentLogic.ProcessOrderPayment(model);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                throw new UnauthorizedException("User must be authenticated");
+
+            var (payment, shouldBeProcessed) = await _paymentLogic.ProcessOrderPayment(dto, userId);
             return Ok(payment);
         }
     }

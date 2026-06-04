@@ -15,5 +15,6 @@ namespace OrderService.Models
         public int Quantity { get; set; }
         public DateTime CreatedAt { get; set; }
         public string UserId { get; set; }
+        public double UnitPrice { get; set; }
     }
 }

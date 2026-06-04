@@ -23,6 +23,8 @@ builder.Services.AddSingleton<RabbitMQPublisher>();
 builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.AddScoped<OrderLogic>();
 
+builder.Services.AddHttpContextAccessor();
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddAuthentication(options =>
@@ -50,6 +52,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
