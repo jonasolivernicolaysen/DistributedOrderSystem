@@ -47,12 +47,7 @@ namespace OrderService.Services
             if (product == null)
                 throw new NotFoundException("Product not found");
 
-
             double price = (double)product.price;
-            Console.WriteLine($"product id: {product.productId}");
-            Console.WriteLine($"Price: {product.price}");
-            Console.WriteLine(response);
-            Console.WriteLine(content);
 
             var order = OrderMapper.ToOrderModel(dto, userId);
             order.UnitPrice = price;

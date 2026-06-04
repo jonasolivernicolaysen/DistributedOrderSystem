@@ -58,6 +58,7 @@ namespace PaymentService.Services
                 Amount = payment.TotalAmount
             };
             var json = JsonSerializer.Serialize(withdrawDto);
+            Console.WriteLine(json);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             // forward jwt token
@@ -67,8 +68,15 @@ namespace PaymentService.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                var error = await response.Content.ReadAsStringAsync();
-                throw new BadRequestException(error);
+                var content = await response.Content.ReadAsStringAsync();
+
+                using var doc = JsonDocument.Parse(content);
+
+                var detail = doc.RootElement
+                    .GetProperty("detail")
+                    .GetString();
+
+                throw new BadRequestException(detail ?? "Payment failed");
             }
 
             payment.Status = PaymentStatus.Completed;
