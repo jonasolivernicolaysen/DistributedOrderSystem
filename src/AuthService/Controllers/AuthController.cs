@@ -1,14 +1,15 @@
+using AuthService.Data;
+using AuthService.Exceptions;
 using AuthService.Models;
 using AuthService.Models.DTOs;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using AuthService.Data;
+using System.Security.Claims;
 
 namespace IdentityPlatformApi.Controllers
 {
-
     [ApiController]
     [Route("/api/auth")]
     public class AuthController : ControllerBase
@@ -138,6 +139,18 @@ namespace IdentityPlatformApi.Controllers
             {
                 message = "Withdrawal successful",
                 balance = user.AccountBalance
+            });
+        }
+
+        [HttpGet("balance")]
+        public async Task<IActionResult> GetBalance()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var balance = await _userService.GetBalanceAsync(userId);
+
+            return Ok(new
+            {
+                balance = balance
             });
         }
     }

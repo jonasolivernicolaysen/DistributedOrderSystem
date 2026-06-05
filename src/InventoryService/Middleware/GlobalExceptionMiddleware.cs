@@ -2,8 +2,6 @@
 
 namespace InventoryService.Middleware
 {
-    // global exception middleware written by chatgpt
-    // this removes the need for try catch blocks in controllers so controllers stay slimmer
     public class GlobalExceptionMiddleware
     {
         private readonly RequestDelegate _next;

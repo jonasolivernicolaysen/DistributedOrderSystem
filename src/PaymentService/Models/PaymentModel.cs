@@ -12,10 +12,8 @@ namespace PaymentService.Models
         public int Quantity { get; set; }
         public PaymentStatus Status { get; set; }
         public DateTime? PaidAt { get; set; } 
-        public int ReceivingAccount { get; set; } = 1234567890; // account number of website owner
-        public int PayingAccount { get; set; }
+        public int ReceivingAccount { get; set; } = 1234567890; // account number of product owner, user Id of product owner etc
         public string UserId { get; set; }
         public double TotalAmount { get; set; }
     }
 }
-

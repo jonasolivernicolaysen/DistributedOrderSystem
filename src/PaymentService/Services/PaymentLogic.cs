@@ -58,7 +58,6 @@ namespace PaymentService.Services
                 Amount = payment.TotalAmount
             };
             var json = JsonSerializer.Serialize(withdrawDto);
-            Console.WriteLine(json);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             // forward jwt token
@@ -81,7 +80,6 @@ namespace PaymentService.Services
 
             payment.Status = PaymentStatus.Completed;
             payment.PaidAt = DateTime.UtcNow;
-            payment.PayingAccount = dto.PayingAccount;
 
             var evt = new PaymentCompletedEvent 
             {

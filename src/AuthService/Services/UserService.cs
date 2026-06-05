@@ -175,5 +175,15 @@ namespace AuthService.Services
             await _userManager.UpdateAsync(user);
             return user;
         }
+
+        public async Task<double> GetBalanceAsync(string userId)
+        {
+            var user = await GetUserById(userId);
+            if (user == null)
+                // this returns unauthorized instead of badrequest since userId is fetched from identity
+                throw new UnauthorizedException($"User with id {userId} not found");
+
+            return user.AccountBalance;
+        }
     }
 }
