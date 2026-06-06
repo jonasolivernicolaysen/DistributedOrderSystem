@@ -1,17 +1,53 @@
+import { useState } from "react";
+
 function RegisterPage() {
+    // state
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    // functions
+    const handleRegister = async () => {
+        try {
+            const response = await fetch(
+                "https://localhost:7144/api/auth/register",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password
+                    })
+                });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error);
+                return;
+            }
+            alert("Registration successful");
+        } catch (error) {
+            console.error(error);
+            alert("Could not connect to the server");
+        }
+    };
+
+    // UI
+
     return (
         <div>
             <h1>Register</h1>
 
-            <input type="text" placeholder="First Name" />
-            <input type="text" placeholder="Last Name" />
-            <input type="text" placeholder="Username" />
+            <input value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="Username" />
 
-            <input type="password" placeholder="Password" />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" placeholder="Email" />
 
-            <input type="password" placeholder="Repeat password" />
+            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" />
 
-            <button type="button">Register</button>
+            <button type="button" onClick={handleRegister}>Register</button>
         </div>
     );
 }
