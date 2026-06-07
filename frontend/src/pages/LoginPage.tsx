@@ -43,14 +43,49 @@ function LoginPage() {
 
     // UI
     return (
-        <div>
-            <h1>Login</h1>
+        <div className="container mt-5">
+            <div className="row justify-content-center">
+                <div className="col-md-4">
 
-            <input value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="Username" />
+                    <div className="card shadow">
+                        <div className="card-body">
 
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" />
+                            <h2 className="text-center mb-4">
+                                Login
+</h2>
 
-            <button type="button" onClick={handleLogin}>Login</button>
+                            <div className="mb-3">
+                                <input
+                                    className="form-control"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    type="text"
+                                    placeholder="Username"
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <input
+                                    className="form-control"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="Password"
+                                />
+                            </div>
+
+                            <button
+                                className="btn btn-primary w-100"
+                                onClick={handleLogin}
+                            >
+                                Login
+                            </button>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     );
 }
