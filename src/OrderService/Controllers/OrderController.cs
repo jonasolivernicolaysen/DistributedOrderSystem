@@ -41,6 +41,34 @@ namespace OrderService.Controllers
             return Ok(new CreateOrderResponseDto { 
                 PaymentId = order.PaymentId
             });
-        } 
+        }
+
+        [HttpPost("cart")]
+        public async Task<IActionResult> AddItemToCart(AddToCartDto dto)
+        {
+            // find cart
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            await _orderLogic.AddItemToCartAsync(dto, userId);
+            return Ok();
+        }
+
+        [HttpGet("cart")]
+        public async Task<IActionResult> GetCart()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            Cart cart = await _orderLogic.GetCartAsync(userId);
+            return Ok(new CartResponseDto
+            {
+                CartId = cart.CartId,
+                Items = cart.Items.Select(i => new CartItemResponseDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            });
+        }
     }
 }

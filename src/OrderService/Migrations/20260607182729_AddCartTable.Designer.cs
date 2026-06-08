@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrderService.Data;
 
@@ -10,9 +11,11 @@ using OrderService.Data;
 namespace OrderService.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    partial class OrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607182729_AddCartTable")]
+    partial class AddCartTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.24");
@@ -54,7 +57,7 @@ namespace OrderService.Migrations
 
                     b.HasIndex("CartId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItem");
                 });
 
             modelBuilder.Entity("OrderService.Models.OrderModel", b =>
@@ -117,13 +120,11 @@ namespace OrderService.Migrations
 
             modelBuilder.Entity("OrderService.Models.CartItem", b =>
                 {
-                    b.HasOne("OrderService.Models.Cart", "Cart")
+                    b.HasOne("OrderService.Models.Cart", null)
                         .WithMany("Items")
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Cart");
                 });
 
             modelBuilder.Entity("OrderService.Models.Cart", b =>

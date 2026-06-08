@@ -9,6 +9,16 @@ namespace OrderService.Data
             : base(options) { }
 
         public DbSet<OrderModel> Models { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
         public DbSet<OutboxMessage> OutboxMessages { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Cart>()
+                .HasMany(c => c.Items)
+                .WithOne(ci => ci.Cart)
+                .HasForeignKey(ci => ci.CartId);
+        }
     }
 }

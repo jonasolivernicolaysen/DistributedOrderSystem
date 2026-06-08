@@ -40,5 +40,45 @@ namespace AuthService.Controllers
 
             return StatusCode((int)response.StatusCode, content);
         }
+
+        [HttpPost("cart")]
+        public async Task<IActionResult> AddItemToCart([FromBody] AddToCartDto dto)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "https://localhost:7199/api/orders/cart");
+
+            // forward the body
+            var json = JsonSerializer.Serialize(dto);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
+
+        [HttpGet("cart")]
+        public async Task<IActionResult> GetCart()
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "https://localhost:7199/api/orders/cart");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
     }
 }
