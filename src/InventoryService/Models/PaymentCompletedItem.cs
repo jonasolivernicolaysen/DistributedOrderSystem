@@ -1,6 +1,6 @@
-﻿namespace OrderService.Models.DTOs
+﻿namespace InventoryService.Models
 {
-    public class CartItemResponseDto
+    public class PaymentCompletedItem
     {
         public Guid ProductId { get; set; }
         public decimal UnitPrice { get; set; }

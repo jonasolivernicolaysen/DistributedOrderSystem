@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OrderService.Models
+namespace PaymentService.Models
 {
-    public class CartItem
+    public class PaymentItem
     {
         [Key]
-        public Guid CartItemId { get; set; } = Guid.NewGuid();
+        public Guid PaymentItemId { get; set; } = Guid.NewGuid();
+        public Guid PaymentId { get; set; }
         public Guid ProductId { get; set; }
-        public Guid CartId { get; set; }
-        public Cart Cart { get; set; }
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
     }

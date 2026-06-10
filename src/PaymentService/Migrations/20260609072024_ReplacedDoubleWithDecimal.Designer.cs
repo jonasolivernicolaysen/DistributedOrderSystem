@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PaymentService.Data;
 
@@ -10,9 +11,11 @@ using PaymentService.Data;
 namespace PaymentService.Migrations
 {
     [DbContext(typeof(PaymentDbContext))]
-    partial class PaymentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609072024_ReplacedDoubleWithDecimal")]
+    partial class ReplacedDoubleWithDecimal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.24");
@@ -42,31 +45,6 @@ namespace PaymentService.Migrations
                     b.ToTable("OutboxMessages");
                 });
 
-            modelBuilder.Entity("PaymentService.Models.PaymentItem", b =>
-                {
-                    b.Property<Guid>("PaymentItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("PaymentId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("PaymentItemId");
-
-                    b.HasIndex("PaymentId");
-
-                    b.ToTable("PaymentItems");
-                });
-
             modelBuilder.Entity("PaymentService.Models.PaymentModel", b =>
                 {
                     b.Property<Guid>("PaymentId")
@@ -78,6 +56,12 @@ namespace PaymentService.Migrations
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("ReceivingAccount")
                         .HasColumnType("INTEGER");
@@ -112,20 +96,6 @@ namespace PaymentService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProcessedOrders");
-                });
-
-            modelBuilder.Entity("PaymentService.Models.PaymentItem", b =>
-                {
-                    b.HasOne("PaymentService.Models.PaymentModel", null)
-                        .WithMany("Items")
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("PaymentService.Models.PaymentModel", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

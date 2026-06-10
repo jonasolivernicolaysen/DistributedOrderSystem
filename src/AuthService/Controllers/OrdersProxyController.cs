@@ -80,5 +80,23 @@ namespace AuthService.Controllers
 
             return StatusCode((int)response.StatusCode, content);
         }
+
+        [HttpPost("cart/checkout")]
+        public async Task<IActionResult> CheckoutCart()
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "https://localhost:7199/api/orders/cart/checkout");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
     }
-}
+}   

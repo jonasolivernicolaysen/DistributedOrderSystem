@@ -28,79 +28,94 @@ namespace PaymentService.Services
 
         public async Task<(PaymentModel payment, bool shouldBeProcessed)> ProcessOrderPayment(PaymentDto dto, string currentUserId)
         {
-            var payment = await _context.Payments
-                .FirstOrDefaultAsync(p => p.PaymentId == dto.PaymentId);
-
-            if (payment == null)
-                throw new NotFoundException(dto.PaymentId.ToString());
-
-            if (payment.UserId != currentUserId)
-                throw new UnauthorizedException("User is not authorized to process this payment.");
-
-            if (payment.Status == PaymentStatus.Completed)
-                return (payment, false);
-
-            // withdraw here
-            var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                $"https://localhost:7144/api/auth/withdraw");
-
-            var token = _httpContextAccessor
-                .HttpContext?
-                .Request
-                .Headers["Authorization"]
-                .ToString();
-
-            // forward the body
-            var withdrawDto = new WithdrawDto
+            try
             {
-                UserId = currentUserId,
-                Amount = payment.TotalAmount
-            };
-            var json = JsonSerializer.Serialize(withdrawDto);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                
+                var payment = await _context.Payments
+                    .Include(p => p.Items)
+                    .FirstOrDefaultAsync(p => p.PaymentId == dto.PaymentId);
 
-            // forward jwt token
-            request.Headers.Add("Authorization", token);
+                if (payment == null)
+                    throw new NotFoundException(dto.PaymentId.ToString());
 
-            var response = await _httpClient.SendAsync(request);
+                if (payment.UserId != currentUserId)
+                    throw new UnauthorizedException("User is not authorized to process this payment.");
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
+                if (payment.Status == PaymentStatus.Completed)
+                    return (payment, false);
 
-                using var doc = JsonDocument.Parse(content);
+                // withdraw here
+                var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    $"https://localhost:7144/api/auth/withdraw");
 
-                var detail = doc.RootElement
-                    .GetProperty("detail")
-                    .GetString();
+                var token = _httpContextAccessor
+                    .HttpContext?
+                    .Request
+                    .Headers["Authorization"]
+                    .ToString();
 
-                throw new BadRequestException(detail ?? "Payment failed");
+                // forward the body
+                var withdrawDto = new WithdrawDto
+                {
+                    UserId = currentUserId,
+                    Amount = payment.TotalPrice
+                };
+                var json = JsonSerializer.Serialize(withdrawDto);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // forward jwt token
+                request.Headers.Add("Authorization", token);
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    using var doc = JsonDocument.Parse(content);
+
+                    var detail = doc.RootElement
+                        .GetProperty("detail")
+                        .GetString();
+
+                    throw new BadRequestException(detail ?? "Payment failed");
+                }
+
+                payment.Status = PaymentStatus.Completed;
+                payment.PaidAt = DateTime.UtcNow;
+
+                var evt = new PaymentCompletedEvent 
+                {
+                    OrderId = payment.OrderId,
+                    PaymentId = payment.PaymentId,
+                    TotalPrice = payment.TotalPrice,
+                    Items = payment.Items.Select(i => new PaymentCompletedItem
+                    {
+                        ProductId = i.ProductId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice
+                    }).ToList(),
+                };
+
+                _context.OutboxMessages.Add(new OutboxMessage
+                {
+                    Id = Guid.NewGuid(),
+                    Type = nameof(PaymentCompletedEvent),
+                    Payload = JsonSerializer.Serialize(evt),
+                    CreatedAt = DateTime.UtcNow,
+                    Processed = false
+                });
+
+                await _context.SaveChangesAsync();
+
+                return (payment, true);
             }
-
-            payment.Status = PaymentStatus.Completed;
-            payment.PaidAt = DateTime.UtcNow;
-
-            var evt = new PaymentCompletedEvent 
+            catch (Exception ex)
             {
-                OrderId = payment.OrderId,
-                PaymentId = payment.PaymentId,
-                ProductId = payment.ProductId,
-                Quantity = payment.Quantity
-            };
-
-            _context.OutboxMessages.Add(new OutboxMessage
-            {
-                Id = Guid.NewGuid(),
-                Type = nameof(PaymentCompletedEvent),
-                Payload = JsonSerializer.Serialize(evt),
-                CreatedAt = DateTime.UtcNow,
-                Processed = false
-            });
-
-            await _context.SaveChangesAsync();
-
-            return (payment, true);
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
         }
     }
 }

@@ -31,6 +31,7 @@ namespace OrderService.Controllers
             _orderLogic = orderLogic;
         }
 
+        /*
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrderDto dto)
         {
@@ -42,6 +43,7 @@ namespace OrderService.Controllers
                 PaymentId = order.PaymentId
             });
         }
+        */
 
         [HttpPost("cart")]
         public async Task<IActionResult> AddItemToCart(AddToCartDto dto)
@@ -69,6 +71,29 @@ namespace OrderService.Controllers
                     UnitPrice = i.UnitPrice
                 }).ToList()
             });
+        }
+
+        [HttpPost("cart/checkout")]
+        public async Task<IActionResult> Checkout()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var rawOrder = await _orderLogic.CheckoutAsync(userId);
+            
+            var order = new OrderResponseDto
+            {
+                OrderId = rawOrder.OrderId,
+                PaymentId = rawOrder.PaymentId,
+                TotalPrice = rawOrder.TotalPrice,
+                Items = rawOrder.Items.Select(i => new CartItemResponseDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            };
+
+            return Ok(order);
         }
     }
 }

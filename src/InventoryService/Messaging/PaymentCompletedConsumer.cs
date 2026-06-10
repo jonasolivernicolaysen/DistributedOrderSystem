@@ -90,8 +90,6 @@ namespace InventoryService.Messaging
                 queue: "inventory-payments-dlq",
                 exchange: "inventory-payments-dlx",
                 routingKey: "");
-
-            
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -163,20 +161,23 @@ namespace InventoryService.Messaging
                 return;
             }
 
-            // update inventory
-            var item = await db.Inventory
-                .FirstOrDefaultAsync(item => item.ProductId == evt.ProductId);
-
-            if (item == null)
-                throw new NotFoundException($"Product with Id {evt.ProductId} not found");
-
-            if (item.Stock < evt.Quantity)
+            // must do this operation for every item inside evt.Items
+            foreach(var i in evt.Items)
             {
-                Console.WriteLine("Not enough stock");
-                return;
-            }
+                // update inventory
+                var item = await db.Inventory
+                    .FirstOrDefaultAsync(item => item.ProductId == i.ProductId);
 
-            item.Stock -= evt.Quantity;
+                if (item == null)
+                    throw new NotFoundException($"Product with Id {i.ProductId} not found");
+
+                if (item.Stock < i.Quantity)
+                {
+                    throw new BadRequestException($"Not enough stock for product {item.ProductName}. Stock: {item.Stock}");
+                }
+
+                item.Stock -= i.Quantity;
+            }
 
             db.ProcessedMessages.Add(new ProcessedMessage
             {

@@ -3,6 +3,6 @@
     public class WithdrawDto
     {
         public required string UserId { get; set; }
-        public required double Amount { get; set; }
+        public required decimal Amount { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace OrderService.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace OrderService.Models
 {
     public class Cart
     {

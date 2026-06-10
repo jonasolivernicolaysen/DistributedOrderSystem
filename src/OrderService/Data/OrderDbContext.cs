@@ -19,6 +19,10 @@ namespace OrderService.Data
                 .HasMany(c => c.Items)
                 .WithOne(ci => ci.Cart)
                 .HasForeignKey(ci => ci.CartId);
+
+            modelBuilder.Entity<Cart>()
+                .HasIndex(c => c.UserId)
+                .IsUnique();
         }
     }
 }

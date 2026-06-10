@@ -25,6 +25,7 @@ namespace OrderService.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        /*
         public async Task<OrderModel> ProcessOrderCreation(CreateOrderDto dto, string userId)
         {
             // call product service to get product details and calculate total price
@@ -48,7 +49,7 @@ namespace OrderService.Services
             if (product == null)
                 throw new NotFoundException("Product not found");
 
-            double price = (double)product.price;
+            decimal price = (decimal)product.price;
 
             var order = OrderMapper.ToOrderModel(dto, userId);
             order.UnitPrice = price;
@@ -75,6 +76,7 @@ namespace OrderService.Services
             await _context.SaveChangesAsync();
             return order;
         }
+        */
 
         public async Task<CartItem> AddItemToCartAsync(AddToCartDto dto, string userId)
         {
@@ -91,7 +93,6 @@ namespace OrderService.Services
                 };
 
                 _context.Carts.Add(cart);
-                Console.WriteLine(_context.Entry(cart).State);
             }
 
             // get product by productId from ProductService
@@ -119,7 +120,7 @@ namespace OrderService.Services
             if (product == null)
                 throw new NotFoundException("Product not found");
 
-            double price = (double)product.price;
+            decimal price = (decimal)product.price;
 
             // check if same product is already in cart. If it is, add it to quantity.
             var existingItem = cart.Items
@@ -136,30 +137,22 @@ namespace OrderService.Services
                 cartItem = new CartItem
                 {
                     ProductId = dto.ProductId,
-                    CartId = cart.CartId,
                     UnitPrice = price,
-                    Quantity = dto.Quantity
+                    Quantity = dto.Quantity,
+                    CartId = cart.CartId
                 };
 
                 // add item to cart
-                _context.CartItems.Add(cartItem); // this is temporary remember to change this
-                Console.WriteLine($"this is what youre looking for {_context.Entry(cartItem).State}");
+                _context.CartItems.Add(cartItem);
             }
             // save
             try
             {
-                foreach (var entry in _context.ChangeTracker.Entries())
-                {
-                    Console.WriteLine(
-                        $"{entry.Entity.GetType().Name} - {entry.State}");
-                }
                 var changes = await _context.SaveChangesAsync();
-                Console.WriteLine($"Changes: {changes}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                throw;
+                throw new Exception(ex.ToString());
             }
 
             // return cartitem
@@ -173,8 +166,70 @@ namespace OrderService.Services
                 .FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart == null)
                 throw new NotFoundException("Cart not found");
-
+            await _context.SaveChangesAsync();
             return cart;
+        }
+
+        public async Task<OrderModel> CheckoutAsync(string userId)
+        {
+            try
+            {
+
+                var cart = await GetCartAsync(userId);
+                if (!cart.Items.Any())
+                    throw new BadRequestException("Cart is empty");
+
+                var order = new OrderModel
+                {
+                    UserId = userId,
+                    Status = OrderStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    TotalPrice = cart.Items.Sum(i => i.UnitPrice * i.Quantity)
+                };
+
+                order.Items = cart.Items.Select(i => new OrderItem
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList();
+
+                _context.Models.Add(order);
+
+                // add order to outboxmessages
+
+                var orderCreatedEvent = new OrderCreatedEvent
+                {
+                    OrderId = order.OrderId,
+                    PaymentId = order.PaymentId,
+                    UserId = order.UserId,
+                    TotalPrice = order.TotalPrice,
+                    Items = order.Items.Select(i => new OrderCreatedItem
+                    {
+                        ProductId = i.OrderId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice
+                    }).ToList()
+                };
+
+                _context.OutboxMessages.Add(new OutboxMessage
+                {
+                    Id = Guid.NewGuid(),
+                    Type = nameof(OrderCreatedEvent),
+                    Payload = JsonSerializer.Serialize(orderCreatedEvent),
+                    CreatedAt = DateTime.UtcNow,
+                    Processed = false
+                });
+
+                cart.Items.Clear();
+
+                await _context.SaveChangesAsync();
+
+                return order;
+            } catch (Exception e)
+            {
+                throw new Exception(e.ToString());
+            }
         }
     }
 }

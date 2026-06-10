@@ -5,6 +5,7 @@ namespace OrderService.Mappers
 {
     public static class OrderMapper
     {
+        /*
         public static OrderModel ToOrderModel(CreateOrderDto dto, string userId)
         {
             return new OrderModel
@@ -25,5 +26,6 @@ namespace OrderService.Mappers
                 Quantity = model.Quantity
             };
         }
+        */
     }
 }

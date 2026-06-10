@@ -157,7 +157,7 @@ namespace AuthService.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<User> WithdrawFundsAsync(string userId, double amount)
+        public async Task<User> WithdrawFundsAsync(string userId, decimal amount)
         {
             // find user
             var user = await GetUserById(userId);
@@ -176,7 +176,7 @@ namespace AuthService.Services
             return user;
         }
 
-        public async Task<double> GetBalanceAsync(string userId)
+        public async Task<decimal> GetBalanceAsync(string userId)
         {
             var user = await GetUserById(userId);
             if (user == null)
