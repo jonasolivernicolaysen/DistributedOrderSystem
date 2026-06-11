@@ -1,6 +1,13 @@
 
 function CartPage() {
     // state
+
+    interface CartItem {
+        productId: string,
+        name: string,
+        description: string,
+        price: number
+    }
     const [products, setProducts] = useState([]);
 
     // functions
@@ -29,9 +36,6 @@ function CartPage() {
             const data = await response.json();
 
             setProducts(data);
-
-            
-            // get all items from the response
 
         } catch (error) {
             console.error(error);

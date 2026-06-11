@@ -36,5 +36,13 @@ namespace InventoryService.Services
                 .Select(InventoryMapper.ToProtectedInventoryModel)
                 .ToList();
         }
+
+        public async Task<InventoryModel> GetProductByIdAsync(Guid productId)
+        {
+            var product = await _context.Inventory.FirstOrDefaultAsync(p => p.ProductId == productId);
+            if (product == null)
+                throw new NotFoundException($"Product with id {productId} not found");
+            return product;
+        }
     }
 }

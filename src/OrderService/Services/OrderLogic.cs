@@ -95,10 +95,10 @@ namespace OrderService.Services
                 _context.Carts.Add(cart);
             }
 
-            // get product by productId from ProductService
-            var request = new HttpRequestMessage(
+            // get stock from InventoryService
+            var inventoryRequest = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7165/api/products/{dto.ProductId}");
+                $"https://localhost:7248/api/inventory/{dto.ProductId}");
 
             var token = _httpContextAccessor
                 .HttpContext?
@@ -107,16 +107,47 @@ namespace OrderService.Services
                 .ToString();
 
             // forward jwt token
-            request.Headers.Add("Authorization", token);
+            inventoryRequest.Headers.Add("Authorization", token);
 
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
+            var inventoryResponse = await _httpClient.SendAsync(inventoryRequest);
+            if (!inventoryResponse.IsSuccessStatusCode)
             {
                 throw new NotFoundException("Product not found");
             }
 
-            var content = await response.Content.ReadAsStringAsync();
-            var product = JsonSerializer.Deserialize<ProductResponseDto>(content);
+            var inventoryContent = await inventoryResponse.Content.ReadAsStringAsync();
+            var inventoryItem = JsonSerializer.Deserialize<InventoryResponseDto>(inventoryContent);
+
+            if (inventoryItem == null)
+                throw new NotFoundException("Inventory item not found");
+
+            // find total quantity of product in cart
+            var totalQuantityInCart = cart.Items
+                .Where(i => i.ProductId == dto.ProductId)
+                .Sum(i => i.Quantity + dto.Quantity);
+
+
+            // order quantity cannot exceed stock
+            if (inventoryItem.stock < totalQuantityInCart)
+                throw new BadRequestException($"Insufficient stock. Stock: {inventoryItem.stock}");
+
+
+            // get product by productId from ProductService
+            var productRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"https://localhost:7165/api/products/{dto.ProductId}");
+
+            // forward jwt token
+            productRequest.Headers.Add("Authorization", token);
+
+            var productResponse = await _httpClient.SendAsync(productRequest);
+            if (!productResponse.IsSuccessStatusCode)
+            {
+                throw new NotFoundException("Product not found");
+            }
+
+            var productContent = await productResponse.Content.ReadAsStringAsync();
+            var product = JsonSerializer.Deserialize<ProductResponseDto>(productContent);
             if (product == null)
                 throw new NotFoundException("Product not found");
 
