@@ -68,7 +68,9 @@ namespace OrderService.Controllers
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
-                    UnitPrice = i.UnitPrice
+                    UnitPrice = i.UnitPrice,
+                    Name = i.Name,
+                    Description = i.Description
                 }).ToList()
             });
         }

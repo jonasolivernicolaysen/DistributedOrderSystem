@@ -23,6 +23,12 @@ function Navbar() {
                             Products
                         </Link>
                     </li>
+
+                    <li className="nav-item mx-2">
+                        <Link className="nav-link" to="/cart">
+                            Cart
+                        </Link>
+                    </li>
                 </ul>
 
             </div>

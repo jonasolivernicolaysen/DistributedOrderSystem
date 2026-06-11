@@ -133,13 +133,15 @@ namespace OrderService.Services
                 cartItem = existingItem;
             } else
             {
-                // refactor dto to CartItem
+                // refactor to CartItem
                 cartItem = new CartItem
                 {
                     ProductId = dto.ProductId,
                     UnitPrice = price,
                     Quantity = dto.Quantity,
-                    CartId = cart.CartId
+                    CartId = cart.CartId,
+                    Name = product.name,
+                    Description = product.description
                 };
 
                 // add item to cart
@@ -206,7 +208,7 @@ namespace OrderService.Services
                     TotalPrice = order.TotalPrice,
                     Items = order.Items.Select(i => new OrderCreatedItem
                     {
-                        ProductId = i.OrderId,
+                        ProductId = i.ProductId,
                         Quantity = i.Quantity,
                         UnitPrice = i.UnitPrice
                     }).ToList()

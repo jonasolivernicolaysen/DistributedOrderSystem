@@ -171,6 +171,7 @@ namespace InventoryService.Messaging
                 if (item == null)
                     throw new NotFoundException($"Product with Id {i.ProductId} not found");
 
+                // this doesnt work
                 if (item.Stock < i.Quantity)
                 {
                     throw new BadRequestException($"Not enough stock for product {item.ProductName}. Stock: {item.Stock}");
