@@ -41,19 +41,6 @@ function ProductsPage() {
             alert("Could not connect to the server");
         }
     };
-
-    const increaseQuantity = (productId: string) => {
-        setQuantities({
-            ...quantities, [productId]: (quantities[productId] || 1) + 1
-        });
-    };
-
-    const decreaseQuantity = (productId: string) => {
-        setQuantities({
-            ...quantities, [productId]: (quantities[productId] || 1) - 1
-        });
-    };
-
  
     useEffect(() => {
         showProducts();
@@ -89,12 +76,7 @@ function ProductsPage() {
                                         <p className="card-text">{product.description}</p>
 
                                         <div className="d-flex align-items-center gap-2">
-                                            <button className="btn btn-outline-secondary"
-                                                onClick={(e) => {
-                                                e.stopPropagation();
-                                                decreaseQuantity(product.productId)
-                                            }}>-</button>
-
+                                            
                                             <input
                                                 type="number"
                                                 className="form-control"
@@ -105,16 +87,9 @@ function ProductsPage() {
                                                     setQuantities({
                                                         ...quantities, [product.productId]: Number(e.target.value)
                                                     })
-                                            }}></input>
-
-                                            <button className="btn btn-outline-secondary"
-                                                onClick={(e) => {
-                                                e.stopPropagation();
-                                                increaseQuantity(product.productId)
-                                            }}>+</button>
-                                        </div>
-
+                                                }}></input>
                                             <button className="btn btn-primary mt-3 w-100">Add to cart</button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
