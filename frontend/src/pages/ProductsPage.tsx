@@ -11,7 +11,7 @@ function ProductsPage() {
 
     const [products, setProducts] = useState([]);
     const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
-    // const [quantities, setQuantities] = useState<Record<string, number>>({});
+    const [quantities, setQuantities] = useState<Record<string, number>>({});
 
     // functions
     const showProducts = async () => {
@@ -42,6 +42,19 @@ function ProductsPage() {
         }
     };
 
+    const increaseQuantity = (productId: string) => {
+        setQuantities({
+            ...quantities, [productId]: (quantities[productId] || 1) + 1
+        });
+    };
+
+    const decreaseQuantity = (productId: string) => {
+        setQuantities({
+            ...quantities, [productId]: (quantities[productId] || 1) - 1
+        });
+    };
+
+ 
     useEffect(() => {
         showProducts();
     }, []);
@@ -76,9 +89,29 @@ function ProductsPage() {
                                         <p className="card-text">{product.description}</p>
 
                                         <div className="d-flex align-items-center gap-2">
-                                            <button className="btn btn-outline-secondary">-</button>
-                                            <input type="number" className="form-control" style={{ width: "80px" }} placeholder="1"></input>
-                                            <button className="btn btn-outline-secondary">+</button>
+                                            <button className="btn btn-outline-secondary"
+                                                onClick={(e) => {
+                                                e.stopPropagation();
+                                                decreaseQuantity(product.productId)
+                                            }}>-</button>
+
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                style={{ width: "80px" }}
+                                                value={quantities[product.productId] || 1}
+                                                onClick={(e) => e.stopPropagation()}
+                                                onChange={(e) => {
+                                                    setQuantities({
+                                                        ...quantities, [product.productId]: Number(e.target.value)
+                                                    })
+                                            }}></input>
+
+                                            <button className="btn btn-outline-secondary"
+                                                onClick={(e) => {
+                                                e.stopPropagation();
+                                                increaseQuantity(product.productId)
+                                            }}>+</button>
                                         </div>
 
                                             <button className="btn btn-primary mt-3 w-100">Add to cart</button>
