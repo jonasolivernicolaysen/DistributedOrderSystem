@@ -122,9 +122,11 @@ namespace OrderService.Services
                 throw new NotFoundException("Inventory item not found");
 
             // find total quantity of product in cart
-            var totalQuantityInCart = cart.Items
+            var existingQuantityInCart = cart.Items
                 .Where(i => i.ProductId == dto.ProductId)
-                .Sum(i => i.Quantity + dto.Quantity);
+                .Sum(i => i.Quantity);
+
+            var totalQuantityInCart = existingQuantityInCart + dto.Quantity;
 
 
             // order quantity cannot exceed stock

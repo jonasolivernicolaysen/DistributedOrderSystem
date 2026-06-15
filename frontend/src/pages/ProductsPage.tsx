@@ -10,6 +10,8 @@ function ProductsPage() {
     }
 
     const [products, setProducts] = useState([]);
+    const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
+    // const [quantities, setQuantities] = useState<Record<string, number>>({});
 
     // functions
     const showProducts = async () => {
@@ -53,27 +55,37 @@ function ProductsPage() {
                     {products.map((product: Product) => (
                         <div
                             key={product.productId}
-                            className="col-md-4 mb-4"
-                        >
+                            className="col-md-4 mb-4">
                             <div
-                                className="card h-100 shadow-sm"
+                                className="card shadow-sm"
                                 style={{ cursor: "pointer" }}
-                                onClick={() => console.log(product.productId)}
-                            >
-                                <div className="card-body">
-                                    <h5 className="card-title">
-                                        {product.name}
-                                    </h5>
+                                onClick={() => setExpandedProduct(
+                                    expandedProduct === product.productId ? null : product.productId
+                                )}>
 
-                                    <p className="card-text">
-                                        {product.description}
-                                    </p>
+                                <div className="card-body">
+                                    <h5 className="card-title">{product.name}</h5>
                                 </div>
 
                                 <div className="card-footer">
-                                    <strong>{product.price} kr</strong>
+                                    <strong>{product.price}</strong>
                                 </div>
+
+                                {expandedProduct === product.productId && (
+                                    <div className="card-body border-top">
+                                        <p className="card-text">{product.description}</p>
+
+                                        <div className="d-flex align-items-center gap-2">
+                                            <button className="btn btn-outline-secondary">-</button>
+                                            <input type="number" className="form-control" style={{ width: "80px" }} placeholder="1"></input>
+                                            <button className="btn btn-outline-secondary">+</button>
+                                        </div>
+
+                                            <button className="btn btn-primary mt-3 w-100">Add to cart</button>
+                                    </div>
+                                )}
                             </div>
+
                         </div>
                     ))}
                 </div>
