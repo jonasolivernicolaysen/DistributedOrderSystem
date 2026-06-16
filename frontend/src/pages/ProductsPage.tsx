@@ -59,7 +59,6 @@ function ProductsPage() {
                         quantity
                     })
                 });
-            console.log("yaaya")
             console.log(JSON.stringify({
                 productId,
                 quantity
@@ -116,7 +115,7 @@ function ProductsPage() {
                                                 type="number"
                                                 className="form-control"
                                                 style={{ width: "80px" }}
-                                                value={quantities[product.productId] || 1}
+                                                value={quantities[product.productId] ?? 1}
                                                 onClick={(e) => e.stopPropagation()}
                                                 onChange={(e) => {
                                                     setQuantities({
@@ -128,7 +127,9 @@ function ProductsPage() {
                                                 className="btn btn-primary mt-3 w-100"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    addProductToCart(product.productId, quantities[product.productId])
+                                                    console.log("button ->")
+                                                    console.log(quantities[product.productId])
+                                                    addProductToCart(product.productId, quantities[product.productId] ?? 1)
                                                 }}
                                             >Add to cart</button>
                                         </div>

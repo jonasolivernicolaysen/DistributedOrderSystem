@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function RegisterPage() {
     // state
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    const navigate = useNavigate();
 
     // functions
     const handleRegister = async () => {
@@ -28,7 +31,12 @@ function RegisterPage() {
                 alert(data.error);
                 return;
             }
+
+            localStorage.setItem("token", data.jwtToken);
             alert("Registration successful");
+
+            navigate("/login")
+
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");
