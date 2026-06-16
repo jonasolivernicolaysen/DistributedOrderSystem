@@ -65,7 +65,8 @@ function ProductsPage() {
             }))
 
             if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
+                const error = await response.json();
+                alert(error.error);
                 return;
             }
             alert("Product added to cart");
