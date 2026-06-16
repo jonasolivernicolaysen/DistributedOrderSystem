@@ -31,19 +31,6 @@ namespace OrderService.Controllers
             _orderLogic = orderLogic;
         }
 
-        /*
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateOrderDto dto)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            var order = await _orderLogic.ProcessOrderCreation(dto, userId);
-
-            return Ok(new CreateOrderResponseDto { 
-                PaymentId = order.PaymentId
-            });
-        }
-        */
 
         [HttpPost("cart")]
         public async Task<IActionResult> AddItemToCart(AddToCartDto dto)

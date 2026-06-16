@@ -25,59 +25,6 @@ namespace OrderService.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        /*
-        public async Task<OrderModel> ProcessOrderCreation(CreateOrderDto dto, string userId)
-        {
-            // call product service to get product details and calculate total price
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"https://localhost:7165/api/products/{dto.ProductId}");
-
-            var token = _httpContextAccessor
-                .HttpContext?
-                .Request
-                .Headers["Authorization"]
-                .ToString();
-
-            // forward jwt token
-            request.Headers.Add("Authorization", token);
-
-            var response = await _httpClient.SendAsync(request);
-
-            var content = await response.Content.ReadAsStringAsync();
-            var product = JsonSerializer.Deserialize<ProductResponseDto>(content);
-            if (product == null)
-                throw new NotFoundException("Product not found");
-
-            decimal price = (decimal)product.price;
-
-            var order = OrderMapper.ToOrderModel(dto, userId);
-            order.UnitPrice = price;
-            _context.Models.Add(order);
-
-            var orderCreatedEvent = new OrderCreatedEvent
-            {
-                OrderId = order.OrderId,
-                ProductId = order.ProductId,
-                Quantity = order.Quantity,
-                PaymentId = order.PaymentId,
-                UserId = order.UserId,
-                UnitPrice = price
-            };
-
-            _context.OutboxMessages.Add(new OutboxMessage
-            {
-                Id = Guid.NewGuid(),
-                Type = nameof(OrderCreatedEvent),
-                Payload = JsonSerializer.Serialize(orderCreatedEvent),
-                CreatedAt = DateTime.UtcNow,
-                Processed = false
-            });
-            await _context.SaveChangesAsync();
-            return order;
-        }
-        */
-
         public async Task<CartItem> AddItemToCartAsync(AddToCartDto dto, string userId)
         {
             // find cart in db
@@ -200,7 +147,15 @@ namespace OrderService.Services
                 .Include(c => c.Items)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart == null)
-                throw new NotFoundException("Cart not found");
+            {
+                cart = new Cart
+                {
+                    CartId = Guid.NewGuid(),
+                    UserId = userId
+                };
+
+                _context.Carts.Add(cart);
+            }
             await _context.SaveChangesAsync();
             return cart;
         }
