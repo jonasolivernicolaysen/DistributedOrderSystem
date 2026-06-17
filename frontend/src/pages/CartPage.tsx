@@ -7,7 +7,8 @@ function CartPage() {
         productId: string,
         name: string,
         description: string,
-        price: number
+        unitPrice: number,
+        quantity: number
     }
     const [products, setProducts] = useState<CartItem[]>([]);
 
@@ -37,8 +38,6 @@ function CartPage() {
             const data = await response.json();
 
             // fetches the items instead of the cart 
-            console.log(data)
-            console.log(data.items)
             setProducts(data.items);
 
         } catch (error) {
@@ -56,31 +55,40 @@ function CartPage() {
         <div>
             <h1>Cart</h1>
 
+            <div className="row fw-bold border-bottom pb-2 mb-3">
+                <div className="col-md-4">Name</div>
+                <div className="col-md-2">Price</div>
+                <div className="col-md-2">Quantity</div>
+                <div className="col-md-4 text-end">Sum</div>
+            </div>
+
             <div className="container mt-4">
                 <div className="row">
-                    {products.map((product: CartItem) => (
+                    {products.map((item: CartItem) => (
                         <div
-                            key={product.productId}
-                            className="col-md-4 mb-4"
+                            key={item.productId}
+                            className="border rounded p-3 mb-3 shadow-sm"
                         >
-                            <div
-                                className="card h-100 shadow-sm"
-                                style={{ cursor: "pointer" }}
-                                onClick={() => console.log(product.productId)}
-                            >
-                                <div className="card-body">
-                                    <h5 className="card-title">
-                                        {product.name}
-                                    </h5>
+                            <div className="row align-items-center">
 
-                                    <p className="card-text">
-                                        {product.description}
-                                    </p>
+                                <div className="col-md-4">
+                                    <strong>{item.name}</strong>
                                 </div>
 
-                                <div className="card-footer">
-                                    <strong>{product.price}</strong>
+                                <div className="col-md-2">
+                                    {item.unitPrice} 
                                 </div>
+
+                                <div className="col-md-2">
+                                    {item.quantity}
+                                </div>
+
+                                <div className="col-md-4 text-end">
+                                    <strong>
+                                        {(item.unitPrice * item.quantity).toFixed(2)}
+                                    </strong>
+                                </div>
+
                             </div>
                         </div>
                     ))}

@@ -4,6 +4,7 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import ProductsPage from "./pages/ProductsPage";
 import CartPage from "./pages/CartPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import Navbar from "./components/Navbar";
 
@@ -17,6 +18,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/profile" element={<ProfilePage/>} />
             </Routes>
         </BrowserRouter>
     )

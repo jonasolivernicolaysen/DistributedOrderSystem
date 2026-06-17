@@ -43,7 +43,8 @@ namespace AuthService.Services
             var user = new User
             {
                 UserName = dto.Username,
-                Email = dto.Email
+                Email = dto.Email,
+                
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -184,6 +185,16 @@ namespace AuthService.Services
                 throw new UnauthorizedException($"User with id {userId} not found");
 
             return user.AccountBalance;
+        }
+            
+        public async Task<User> GetProfileDetails(string userId)
+        {
+            var user = await GetUserById(userId);
+            if (user == null)
+                // this returns unauthorized instead of badrequest since userId is fetched from identity
+                throw new UnauthorizedException($"User with id {userId} not found");
+
+            return user;
         }
     }
 }
