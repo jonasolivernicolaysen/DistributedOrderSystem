@@ -98,7 +98,7 @@ namespace AuthService.Controllers
         }
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateListing(Guid productId, UpdateProductListingDto dto)
+        public async Task<IActionResult> UpdateListing(Guid productId, [FromBody] UpdateProductListingDto dto)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Put,

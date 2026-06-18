@@ -20,7 +20,7 @@ function ProfilePage() {
     // state
     const [details, setDetails] = useState<UserDetails>();
     const [products, setProducts] = useState<Product[]>([]);
-    const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const [showUpdateListing, setShowUpdateListing] = useState(false);
     const [editName, setEditName] = useState("");
@@ -79,16 +79,91 @@ function ProfilePage() {
         return data;
     }
 
-    const updateListing = async ( ) => {
-        return;
+    const updateListing = async (productId: string) => {
+        const token = localStorage.getItem("token");
+
+        console.log(JSON.stringify({
+            name: editName,
+            description: editDescription,
+            price: editPrice
+        }));
+        const response = await fetch(
+            `https://localhost:7144/api/products/${productId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    productId: selectedProduct.productId,
+                    name: editName,
+                    description: editDescription,
+                    price: editPrice
+                }) 
+            });
+
+
+        if (!response.ok) {
+            alert(`Request failed: ${response.status}`);
+            return;
+        }
+        const data = await response.json();
+        alert("Product listing updated successfully")
+        return data;
     }
 
-    const updateStock = async () => {
-        return;
+    const updateStock = async (productId: string, updatedStock: number) => {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+            `https://localhost:7144/api/inventory/${productId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    updatedStock
+                })
+            });
+        console.log(productId, updatedStock)
+        console.log(JSON.stringify({
+            updatedStock
+        }))
+        if (!response.ok) {
+            alert(`Request failed: ${response.status}`);
+            return;
+        }
+        const data = await response.json();
+        console.log(data)
+        return data;
     }
 
-    const deleteListing = async () => {
-        return;
+    const deleteListing = async (productId: string) => {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+            `https://localhost:7144/api/products/${productId}`,
+            {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    productId
+                })
+            });
+
+        if (!response.ok) {
+            alert(`Request failed: ${response.status}`);
+            return;
+        }
+        const data = await response.json();
+        alert("Successfully deleted product")
+        return data;
     }
 
 
@@ -115,7 +190,7 @@ function ProfilePage() {
             <p>My products:</p>
 
             <div className="container mt-3">
-                {products.map(product => (
+                {products.map((product: Product) => (
                     <div
                         key={product.productId}
                         className="card mb-2"
@@ -129,11 +204,11 @@ function ProfilePage() {
                                 className="btn btn-secondary"
                                 onClick={() =>
                                     setSelectedProduct(
-                                        selectedProduct === product.productId ? null : product.productId
+                                        selectedProduct === product ? null : product
                                     )}
                             >Edit</button>
 
-                            {selectedProduct === product.productId && (
+                            {selectedProduct === product && (
                                 <div className="card-footer">
 
                                     <div className="d-grid gap-2">
@@ -234,13 +309,12 @@ function ProfilePage() {
 
                                 <button
                                     className="btn btn-primary"
-                                    onClick={updateListing}
+                                    onClick={() =>
+                                        updateListing(selectedProduct.productId)}
                                 >
                                     Save
                                 </button>
-
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -281,7 +355,8 @@ function ProfilePage() {
 
                                 <button
                                     className="btn btn-warning"
-                                    onClick={updateStock}
+                                    onClick={() =>
+                                        updateStock(selectedProduct.productId, newStock)}
                                 >
                                     Save
                                 </button>
@@ -327,7 +402,8 @@ function ProfilePage() {
 
                                 <button
                                     className="btn btn-danger"
-                                    onClick={deleteListing}
+                                    onClick={() =>
+                                        deleteListing(selectedProduct.productId)}
                                 >
                                     Delete
                                 </button>

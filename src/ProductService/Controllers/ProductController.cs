@@ -47,7 +47,7 @@ namespace ProductService.Controllers
         }
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateProductListing(Guid productId, UpdateProductListingDto dto)
+        public async Task<IActionResult> UpdateProductListing(Guid productId,[FromBody] UpdateProductListingDto dto)
         {
             var product = await _productLogic.UpdateProductListingAsync(productId, dto);
             return Ok(product);
