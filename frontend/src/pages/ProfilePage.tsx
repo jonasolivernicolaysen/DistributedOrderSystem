@@ -9,8 +9,29 @@ function ProfilePage() {
         email: string,
         balance: number
     }
+
+    interface Product {
+        productId: string,
+        name: string,
+        description: string,
+        price: number
+    }
+
     // state
     const [details, setDetails] = useState<UserDetails>();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+
+    const [showUpdateListing, setShowUpdateListing] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editPrice, setEditPrice] = useState(0);
+
+    const [showUpdateStock, setShowUpdateStock] = useState(false);
+    const [newStock, setNewStock] = useState(0);
+
+    const [showDelete, setShowDelete] = useState(false);
+
 
     // functions
     const getUserDetails = async () => {
@@ -33,23 +54,291 @@ function ProfilePage() {
         }
         const data = await response.json();
         setDetails(data)
-        console.log(data)
         return data;
     }
 
-    
+    const getUserProducts = async () => {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+            "https://localhost:7144/api/products/me",
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+        if (!response.ok) {
+            alert(`Request failed: ${response.status}`);
+            return;
+        }
+        const data = await response.json();
+        setProducts(data)
+        return data;
+    }
+
+    const updateListing = async ( ) => {
+        return;
+    }
+
+    const updateStock = async () => {
+        return;
+    }
+
+    const deleteListing = async () => {
+        return;
+    }
+
+
 
     useEffect(() => {
         getUserDetails();
     }, [])
+
+    useEffect(() => {
+        getUserProducts();
+    }, [])
+
+
+
     // html
     return (
         <div>
+            <p>Username</p>
+            <p>Email</p>
+            <p>Balance</p>
             <p>{details?.username}</p>
             <p>{details?.email}</p>
             <p>{details?.balance}</p>
             <p>My products:</p>
+
+            <div className="container mt-3">
+                {products.map(product => (
+                    <div
+                        key={product.productId}
+                        className="card mb-2"
+                    >
+                        <div className="card-body">
+                            <h5>{product.name}</h5>
+                            <p>{product.description}</p>
+                            <strong>{product.price}</strong>
+
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                    setSelectedProduct(
+                                        selectedProduct === product.productId ? null : product.productId
+                                    )}
+                            >Edit</button>
+
+                            {selectedProduct === product.productId && (
+                                <div className="card-footer">
+
+                                    <div className="d-grid gap-2">
+
+                                        <button
+                                            className="btn btn-primary me-2"
+                                            onClick={() => {
+                                                setSelectedProduct(product);
+
+                                                setEditName(product.name);
+                                                setEditDescription(product.description);
+                                                setEditPrice(product.price);
+
+                                                setShowUpdateListing(true);
+                                            }}
+                                        >
+                                            Update Listing
+                                        </button>
+
+                                        <button
+                                            className="btn btn-warning me-2"
+                                            onClick={() => {
+                                                setSelectedProduct(product);
+                                                setShowUpdateStock(true);
+                                            }}
+                                        >
+                                            Update Stock
+                                        </button>
+
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={() => {
+                                                setSelectedProduct(product);
+                                                setShowDelete(true);
+                                            }}
+                                        >
+                                            Delete Listing
+                                        </button>
+
+                                    </div>
+
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
             
+            {showUpdateListing && (
+                <div className="modal d-block">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+                                <h5>Update Listing</h5>
+                            </div>
+
+                            <div className="modal-body">
+
+                                <input
+                                    className="form-control mb-2"
+                                    value={editName}
+                                    onChange={(e) =>
+                                        setEditName(e.target.value)
+                                    }
+                                />
+
+                                <textarea
+                                    className="form-control mb-2"
+                                    value={editDescription}
+                                    onChange={(e) =>
+                                        setEditDescription(e.target.value)
+                                    }
+                                />
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    value={editPrice}
+                                    onChange={(e) =>
+                                        setEditPrice(Number(e.target.value))
+                                    }
+                                />
+
+                            </div>
+
+                            <div className="modal-footer">
+
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() =>
+                                        setShowUpdateListing(false)
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={updateListing}
+                                >
+                                    Save
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showUpdateStock && (
+                <div className="modal d-block">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+                                <h5>Update Stock</h5>
+                            </div>
+
+                            <div className="modal-body">
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    value={newStock}
+                                    onChange={(e) =>
+                                        setNewStock(Number(e.target.value))
+                                    }
+                                />
+
+                            </div>
+
+                            <div className="modal-footer">
+
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() =>
+                                        setShowUpdateStock(false)
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    className="btn btn-warning"
+                                    onClick={updateStock}
+                                >
+                                    Save
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDelete && (
+                <div className="modal d-block">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+                                <h5>Delete Listing</h5>
+                            </div>
+
+                            <div className="modal-body">
+
+                                Are you sure you want to delete:
+
+                                <strong>
+                                    {" "}
+                                    {selectedProduct?.name}
+                                </strong>
+                                ?
+
+                            </div>
+
+                            <div className="modal-footer">
+
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() =>
+                                        setShowDelete(false)
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={deleteListing}
+                                >
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

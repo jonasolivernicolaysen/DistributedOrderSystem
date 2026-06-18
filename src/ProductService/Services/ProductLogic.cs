@@ -31,6 +31,16 @@ namespace ProductService.Services
             return products;
         }
 
+        public async Task<List<Product>> GetUserProductsAsync(string userId)
+        {
+            // ownerid == userid
+            var products = await _context
+                .Products
+                .Where(p => p.OwnerId == userId)
+                .ToListAsync();
+            return products;
+        }
+
         public async Task<Product> GetProductByIdAsync(Guid productId)
         {
             var product = await _context.Products.FindAsync(productId);

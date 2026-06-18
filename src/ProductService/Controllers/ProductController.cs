@@ -5,6 +5,7 @@ using ProductService.Models.DTOs;
 using ProductService.Data;
 using ProductService.Mappers;
 
+using System.Security.Claims;
 using SharedContracts;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -57,6 +58,15 @@ namespace ProductService.Controllers
         {
             var product = await _productLogic.DeleteProductListingAsync(productId);
             return Ok(product);
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetUserProducts(Guid productId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var products = await _productLogic.GetUserProductsAsync(userId);
+            return Ok(products);
         }
     }
 }

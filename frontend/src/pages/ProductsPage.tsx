@@ -128,8 +128,6 @@ function ProductsPage() {
                                                 className="btn btn-primary mt-3 w-100"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    console.log("button ->")
-                                                    console.log(quantities[product.productId])
                                                     addProductToCart(product.productId, quantities[product.productId] ?? 1)
                                                 }}
                                             >Add to cart</button>
