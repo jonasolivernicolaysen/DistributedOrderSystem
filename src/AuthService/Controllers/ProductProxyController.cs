@@ -76,7 +76,7 @@ namespace AuthService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateListing(CreateProductListingDto dto)
+        public async Task<IActionResult> CreateListing([FromBody] CreateProductListingDto dto)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Post,

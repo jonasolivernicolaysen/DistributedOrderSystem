@@ -137,7 +137,7 @@ function ProfilePage() {
             return;
         }
         const data = await response.json();
-        console.log(data)
+        alert("Stock updated successfully")
         return data;
     }
 

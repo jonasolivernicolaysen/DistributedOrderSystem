@@ -40,7 +40,7 @@ namespace ProductService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProductListing(CreateProductListingDto dto)
+        public async Task<IActionResult> CreateProductListing([FromBody] CreateProductListingDto dto)
         {
             var product = await _productLogic.CreateProductListingAsync(dto);
             return Ok(product);

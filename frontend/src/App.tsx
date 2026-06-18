@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import ProductsPage from "./pages/ProductsPage";
 import CartPage from "./pages/CartPage";
 import ProfilePage from "./pages/ProfilePage";
+import CreateProductPage from "./pages/CreateProductPage";
 
 import Navbar from "./components/Navbar";
 
@@ -19,6 +20,7 @@ function App() {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/profile" element={<ProfilePage/>} />
+                <Route path="/products/create" element={<CreateProductPage/>} />
             </Routes>
         </BrowserRouter>
     )

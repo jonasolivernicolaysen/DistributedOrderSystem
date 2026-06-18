@@ -51,8 +51,7 @@ function LoginPage() {
                         <div className="card-body">
 
                             <h2 className="text-center mb-4">
-                                Login
-</h2>
+                                Login</h2>
 
                             <div className="mb-3">
                                 <input

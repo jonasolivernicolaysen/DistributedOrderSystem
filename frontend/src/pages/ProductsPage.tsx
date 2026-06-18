@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function ProductsPage() {
     // state
@@ -12,6 +13,12 @@ function ProductsPage() {
     const [products, setProducts] = useState([]);
     const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
     const [quantities, setQuantities] = useState<Record<string, number>>({});
+
+    const [newProductName, setNewProductName] = useState("");
+    const [newProductDescription, setNewProductDescription] = useState("");
+    const [newProductPrice, setNewProductPrice] = useState(0);
+
+    const navigate = useNavigate();
 
     // functions
     const showProducts = async () => {
@@ -75,6 +82,7 @@ function ProductsPage() {
             alert("Could not connect to the server");
         }
     };
+
  
     useEffect(() => {
         showProducts();
@@ -83,7 +91,15 @@ function ProductsPage() {
    
     return (
         <div>
-            <h1>Products</h1>
+            <div>
+                <h1>Products</h1>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                        navigate("/products/create");
+                    }}
+                >Add Product Listing</button>
+            </div>
 
             <div className="container mt-4">
                 <div className="row">
