@@ -42,6 +42,35 @@ namespace PaymentService.Migrations
                     b.ToTable("OutboxMessages");
                 });
 
+            modelBuilder.Entity("PaymentService.Models.PaymentItem", b =>
+                {
+                    b.Property<Guid>("PaymentItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PaymentItemId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentItems");
+                });
+
             modelBuilder.Entity("PaymentService.Models.PaymentModel", b =>
                 {
                     b.Property<Guid>("PaymentId")
@@ -54,20 +83,11 @@ namespace PaymentService.Migrations
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ReceivingAccount")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("TotalAmount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -93,6 +113,20 @@ namespace PaymentService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProcessedOrders");
+                });
+
+            modelBuilder.Entity("PaymentService.Models.PaymentItem", b =>
+                {
+                    b.HasOne("PaymentService.Models.PaymentModel", null)
+                        .WithMany("Items")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PaymentService.Models.PaymentModel", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

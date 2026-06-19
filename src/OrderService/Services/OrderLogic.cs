@@ -1,4 +1,5 @@
-﻿using OrderService.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderService.Data;
 using OrderService.Exceptions;
 using OrderService.Mappers;
 using OrderService.Models;
@@ -24,12 +25,27 @@ namespace OrderService.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<OrderModel> ProcessOrderCreation(CreateOrderDto dto, string userId)
+        public async Task<CartItem> AddItemToCartAsync(AddToCartDto dto, string userId)
         {
-            // call product service to get product details and calculate total price
-            var request = new HttpRequestMessage(
+            // find cart in db
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+            if (cart == null)
+            {
+                cart = new Cart
+                {
+                    CartId = Guid.NewGuid(),
+                    UserId = userId
+                };
+
+                _context.Carts.Add(cart);
+            }
+
+            // get stock from InventoryService
+            var inventoryRequest = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7165/api/products/{dto.ProductId}");
+                $"https://localhost:7248/api/inventory/{dto.ProductId}");
 
             var token = _httpContextAccessor
                 .HttpContext?
@@ -38,41 +54,174 @@ namespace OrderService.Services
                 .ToString();
 
             // forward jwt token
-            request.Headers.Add("Authorization", token);
+            inventoryRequest.Headers.Add("Authorization", token);
 
-            var response = await _httpClient.SendAsync(request);
+            var inventoryResponse = await _httpClient.SendAsync(inventoryRequest);
+            if (!inventoryResponse.IsSuccessStatusCode)
+            {
+                throw new NotFoundException("Product not found");
+            }
 
-            var content = await response.Content.ReadAsStringAsync();
-            var product = JsonSerializer.Deserialize<ProductResponseDto>(content);
+            var inventoryContent = await inventoryResponse.Content.ReadAsStringAsync();
+            var inventoryItem = JsonSerializer.Deserialize<InventoryResponseDto>(inventoryContent);
+
+            if (inventoryItem == null)
+                throw new NotFoundException("Inventory item not found");
+
+            // find total quantity of product in cart
+            var existingQuantityInCart = cart.Items
+                .Where(i => i.ProductId == dto.ProductId)
+                .Sum(i => i.Quantity);
+
+            var totalQuantityInCart = existingQuantityInCart + dto.Quantity;
+
+
+            // order quantity cannot exceed stock
+            if (inventoryItem.stock < totalQuantityInCart)
+                throw new BadRequestException($"Insufficient stock. Stock: {inventoryItem.stock}");
+
+
+            // get product by productId from ProductService
+            var productRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"https://localhost:7165/api/products/{dto.ProductId}");
+
+            // forward jwt token
+            productRequest.Headers.Add("Authorization", token);
+
+            var productResponse = await _httpClient.SendAsync(productRequest);
+            if (!productResponse.IsSuccessStatusCode)
+            {
+                throw new NotFoundException("Product not found");
+            }
+
+            var productContent = await productResponse.Content.ReadAsStringAsync();
+            var product = JsonSerializer.Deserialize<ProductResponseDto>(productContent);
             if (product == null)
                 throw new NotFoundException("Product not found");
 
-            double price = (double)product.price;
+            decimal price = (decimal)product.price;
 
-            var order = OrderMapper.ToOrderModel(dto, userId);
-            order.UnitPrice = price;
-            _context.Models.Add(order);
+            // check if same product is already in cart. If it is, add it to quantity.
+            var existingItem = cart.Items
+                .FirstOrDefault(i => i.ProductId == dto.ProductId);
 
-            var orderCreatedEvent = new OrderCreatedEvent
+            CartItem cartItem;
+            if (existingItem != null)
             {
-                OrderId = order.OrderId,
-                ProductId = order.ProductId,
-                Quantity = order.Quantity,
-                PaymentId = order.PaymentId,
-                UserId = order.UserId,
-                UnitPrice = price
-            };
-
-            _context.OutboxMessages.Add(new OutboxMessage
+                existingItem.Quantity += dto.Quantity;
+                cartItem = existingItem;
+            } else
             {
-                Id = Guid.NewGuid(),
-                Type = nameof(OrderCreatedEvent),
-                Payload = JsonSerializer.Serialize(orderCreatedEvent),
-                CreatedAt = DateTime.UtcNow,
-                Processed = false
-            });
+                // refactor to CartItem
+                cartItem = new CartItem
+                {
+                    ProductId = dto.ProductId,
+                    UnitPrice = price,
+                    Quantity = dto.Quantity,
+                    CartId = cart.CartId,
+                    Name = product.name,
+                    Description = product.description
+                };
+
+                // add item to cart
+                _context.CartItems.Add(cartItem);
+            }
+            // save
+            try
+            {
+                var changes = await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            // return cartitem
+            return cartItem;
+        }
+
+        public async Task<Cart> GetCartAsync(string userId)
+        {
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+            if (cart == null)
+            {
+                cart = new Cart
+                {
+                    CartId = Guid.NewGuid(),
+                    UserId = userId
+                };
+
+                _context.Carts.Add(cart);
+            }
             await _context.SaveChangesAsync();
-            return order;
+            return cart;
+        }
+
+        public async Task<OrderModel> CheckoutAsync(string userId)
+        {
+            try
+            {
+
+                var cart = await GetCartAsync(userId);
+                if (!cart.Items.Any())
+                    throw new BadRequestException("Cart is empty");
+
+                var order = new OrderModel
+                {
+                    UserId = userId,
+                    Status = OrderStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    TotalPrice = cart.Items.Sum(i => i.UnitPrice * i.Quantity)
+                };
+
+                order.Items = cart.Items.Select(i => new OrderItem
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Name,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList();
+
+                _context.Models.Add(order);
+
+                // add order to outboxmessages
+
+                var orderCreatedEvent = new OrderCreatedEvent
+                {
+                    OrderId = order.OrderId,
+                    PaymentId = order.PaymentId,
+                    UserId = order.UserId,
+                    TotalPrice = order.TotalPrice,
+                    Items = order.Items.Select(i => new OrderCreatedItem
+                    {
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice
+                    }).ToList()
+                };
+
+                _context.OutboxMessages.Add(new OutboxMessage
+                {
+                    Id = Guid.NewGuid(),
+                    Type = nameof(OrderCreatedEvent),
+                    Payload = JsonSerializer.Serialize(orderCreatedEvent),
+                    CreatedAt = DateTime.UtcNow,
+                    Processed = false
+                });
+
+                cart.Items.Clear();
+
+                await _context.SaveChangesAsync();
+
+                return order;
+            } catch (Exception e)
+            {
+                throw new Exception(e.ToString());
+            }
         }
     }
 }

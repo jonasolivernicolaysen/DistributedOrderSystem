@@ -31,16 +31,58 @@ namespace OrderService.Controllers
             _orderLogic = orderLogic;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateOrderDto dto)
+
+        [HttpPost("cart")]
+        public async Task<IActionResult> AddItemToCart(AddToCartDto dto)
+        {
+            // find cart
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            await _orderLogic.AddItemToCartAsync(dto, userId);
+            return Ok();
+        }
+
+        [HttpGet("cart")]
+        public async Task<IActionResult> GetCart()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var order = await _orderLogic.ProcessOrderCreation(dto, userId);
-
-            return Ok(new CreateOrderResponseDto { 
-                PaymentId = order.PaymentId
+            Cart cart = await _orderLogic.GetCartAsync(userId);
+            return Ok(new CartResponseDto
+            {
+                CartId = cart.CartId,
+                Items = cart.Items.Select(i => new CartItemResponseDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    Name = i.Name,
+                    Description = i.Description
+                }).ToList()
             });
-        } 
+        }
+
+        [HttpPost("cart/checkout")]
+        public async Task<IActionResult> Checkout()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var rawOrder = await _orderLogic.CheckoutAsync(userId);
+            
+            var order = new OrderResponseDto
+            {
+                OrderId = rawOrder.OrderId,
+                PaymentId = rawOrder.PaymentId,
+                TotalPrice = rawOrder.TotalPrice,
+                Items = rawOrder.Items.Select(i => new CartItemResponseDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            };
+
+            return Ok(order);
+        }
     }
 }

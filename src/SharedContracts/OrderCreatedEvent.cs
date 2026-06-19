@@ -10,10 +10,9 @@ namespace SharedContracts
     {
         public Guid OrderId { get; set; }
         public Guid PaymentId { get; set; }
-        public Guid ProductId { get; set; }
-        public int Quantity { get; set; }
+        public string UserId { get; set; }
+        public decimal TotalPrice { get; set; }
+        public List<OrderCreatedItem> Items { get; set; }
         public Guid MessageId { get; set; } = Guid.NewGuid();
-        public required string UserId { get; set; }
-        public double UnitPrice { get; set; }
     }
 }

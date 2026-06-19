@@ -4,7 +4,5 @@ namespace AuthService.Models;
 
 public class User : IdentityUser
 {
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public double AccountBalance { get; set; } = 1000;
+    public decimal AccountBalance { get; set; } = 1000;
 }

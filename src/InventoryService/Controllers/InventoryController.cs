@@ -31,5 +31,12 @@ namespace InventoryService.Controllers
             var products = await _inventoryLogic.GetProductsAsync();
             return Ok(products);
         }
+
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetProductById([FromRoute] Guid productId)
+        {
+            var product = await _inventoryLogic.GetProductByIdAsync(productId);
+            return Ok(product);
+        }
     }
 }

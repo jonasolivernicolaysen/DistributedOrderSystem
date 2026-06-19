@@ -123,6 +123,18 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddHttpClient();
 
+// CORS 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // instantiate roles
@@ -153,6 +165,11 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 app.UseRateLimiter();
+
+// CORS
+app.UseCors("Frontend");
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -38,5 +38,13 @@ namespace PaymentService.Controllers
             var (payment, shouldBeProcessed) = await _paymentLogic.ProcessOrderPayment(dto, userId);
             return Ok(payment);
         }
+
+        [HttpGet("{paymentId}")]
+        public async Task<IActionResult> GetPaymentDetails([FromRoute] Guid paymentId)
+        {
+            var payment = await _paymentLogic.GetPaymentDetailsAsync(paymentId);
+            Console.WriteLine(payment);
+            return Ok(payment);
+        }
     }
 }

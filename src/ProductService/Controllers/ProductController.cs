@@ -5,6 +5,7 @@ using ProductService.Models.DTOs;
 using ProductService.Data;
 using ProductService.Mappers;
 
+using System.Security.Claims;
 using SharedContracts;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -39,14 +40,14 @@ namespace ProductService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProductListing(CreateProductListingDto dto)
+        public async Task<IActionResult> CreateProductListing([FromBody] CreateProductListingDto dto)
         {
             var product = await _productLogic.CreateProductListingAsync(dto);
             return Ok(product);
         }
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateProductListing(Guid productId, UpdateProductListingDto dto)
+        public async Task<IActionResult> UpdateProductListing(Guid productId,[FromBody] UpdateProductListingDto dto)
         {
             var product = await _productLogic.UpdateProductListingAsync(productId, dto);
             return Ok(product);
@@ -57,6 +58,15 @@ namespace ProductService.Controllers
         {
             var product = await _productLogic.DeleteProductListingAsync(productId);
             return Ok(product);
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetUserProducts(Guid productId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var products = await _productLogic.GetUserProductsAsync(userId);
+            return Ok(products);
         }
     }
 }

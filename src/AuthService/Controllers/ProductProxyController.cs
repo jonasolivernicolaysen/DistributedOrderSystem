@@ -38,6 +38,25 @@ namespace AuthService.Controllers
             return StatusCode((int)response.StatusCode, content);
         }
 
+        [HttpGet("me")]
+        public async Task<IActionResult> ListUserProducts()
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "https://localhost:7165/api/products/me");
+
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
+
         [HttpGet("{Id}")]
         public async Task<IActionResult> GetById(Guid Id)
         {
@@ -57,7 +76,7 @@ namespace AuthService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateListing(CreateProductListingDto dto)
+        public async Task<IActionResult> CreateListing([FromBody] CreateProductListingDto dto)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
@@ -79,7 +98,7 @@ namespace AuthService.Controllers
         }
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateListing(Guid productId, UpdateProductListingDto dto)
+        public async Task<IActionResult> UpdateListing(Guid productId, [FromBody] UpdateProductListingDto dto)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Put,

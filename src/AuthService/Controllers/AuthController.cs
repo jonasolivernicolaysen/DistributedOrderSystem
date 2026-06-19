@@ -153,5 +153,21 @@ namespace IdentityPlatformApi.Controllers
                 balance = balance
             });
         }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserDetails()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var user = await _userService.GetProfileDetails(userId);
+            if (user == null)
+                throw new NotFoundException("User not found");
+
+            return Ok(new UserProfileDto
+            {
+                Username = user.UserName,
+                Email = user.Email,
+                Balance = user.AccountBalance
+            });
+        }
     }
 }

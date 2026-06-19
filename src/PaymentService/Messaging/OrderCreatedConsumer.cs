@@ -158,11 +158,16 @@ namespace PaymentService.Messaging
             {
                 PaymentId = evt.PaymentId,
                 OrderId = evt.OrderId,
-                ProductId = evt.ProductId,
-                Quantity = evt.Quantity,
                 UserId = evt.UserId,
-                TotalAmount = evt.UnitPrice * evt.Quantity,
-                Status = PaymentStatus.Pending
+                TotalPrice = evt.TotalPrice,
+                Status = PaymentStatus.Pending,
+                Items = evt.Items.Select(i => new PaymentItem
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.ProductName,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
             };
 
             var processedOrder = new ProcessedOrder

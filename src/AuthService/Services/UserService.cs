@@ -43,7 +43,8 @@ namespace AuthService.Services
             var user = new User
             {
                 UserName = dto.Username,
-                Email = dto.Email
+                Email = dto.Email,
+                
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -157,7 +158,7 @@ namespace AuthService.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<User> WithdrawFundsAsync(string userId, double amount)
+        public async Task<User> WithdrawFundsAsync(string userId, decimal amount)
         {
             // find user
             var user = await GetUserById(userId);
@@ -176,7 +177,7 @@ namespace AuthService.Services
             return user;
         }
 
-        public async Task<double> GetBalanceAsync(string userId)
+        public async Task<decimal> GetBalanceAsync(string userId)
         {
             var user = await GetUserById(userId);
             if (user == null)
@@ -184,6 +185,16 @@ namespace AuthService.Services
                 throw new UnauthorizedException($"User with id {userId} not found");
 
             return user.AccountBalance;
+        }
+            
+        public async Task<User> GetProfileDetails(string userId)
+        {
+            var user = await GetUserById(userId);
+            if (user == null)
+                // this returns unauthorized instead of badrequest since userId is fetched from identity
+                throw new UnauthorizedException($"User with id {userId} not found");
+
+            return user;
         }
     }
 }
