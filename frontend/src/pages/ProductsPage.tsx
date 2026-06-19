@@ -14,9 +14,7 @@ function ProductsPage() {
     const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
     const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-    const [newProductName, setNewProductName] = useState("");
-    const [newProductDescription, setNewProductDescription] = useState("");
-    const [newProductPrice, setNewProductPrice] = useState(0);
+    const [isAdding, setIsAdding] = useState(false);
 
     const navigate = useNavigate();
 
@@ -50,6 +48,11 @@ function ProductsPage() {
     };
 
     const addProductToCart = async (productId: string, quantity: number) => {
+
+        if (isAdding)
+            return;
+        setIsAdding(true);
+
         try {
             const token = localStorage.getItem("token");
 
@@ -77,6 +80,7 @@ function ProductsPage() {
                 return;
             }
             alert("Product added to cart");
+            setIsAdding(false);
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");
@@ -142,6 +146,7 @@ function ProductsPage() {
 
                                             <button
                                                 className="btn btn-primary mt-3 w-100"
+                                                disabled={isAdding}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     addProductToCart(product.productId, quantities[product.productId] ?? 1)

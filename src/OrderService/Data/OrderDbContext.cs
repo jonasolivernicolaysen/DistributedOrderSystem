@@ -23,6 +23,10 @@ namespace OrderService.Data
             modelBuilder.Entity<Cart>()
                 .HasIndex(c => c.UserId)
                 .IsUnique();
+
+            modelBuilder.Entity<CartItem>()
+            .HasIndex(ci => new { ci.CartId, ci.ProductId })
+            .IsUnique();
         }
     }
 }
