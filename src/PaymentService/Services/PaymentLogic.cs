@@ -117,5 +117,16 @@ namespace PaymentService.Services
                 throw;
             }
         }
+
+        public async Task<PaymentModel> GetPaymentDetailsAsync(Guid paymentId)
+        {
+            var payment = await _context
+                .Payments
+                .Include(p => p.Items)
+                .FirstOrDefaultAsync(p => p.PaymentId == paymentId);
+            if (payment == null)
+                throw new NotFoundException($"Payment with id {paymentId} not found");
+            return payment;
+        }
     }
 }

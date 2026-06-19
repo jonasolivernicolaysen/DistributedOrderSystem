@@ -180,6 +180,7 @@ namespace OrderService.Services
                 order.Items = cart.Items.Select(i => new OrderItem
                 {
                     ProductId = i.ProductId,
+                    ProductName = i.Name,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice
                 }).ToList();
@@ -197,6 +198,7 @@ namespace OrderService.Services
                     Items = order.Items.Select(i => new OrderCreatedItem
                     {
                         ProductId = i.ProductId,
+                        ProductName = i.ProductName,
                         Quantity = i.Quantity,
                         UnitPrice = i.UnitPrice
                     }).ToList()

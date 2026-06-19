@@ -164,6 +164,7 @@ namespace PaymentService.Messaging
                 Items = evt.Items.Select(i => new PaymentItem
                 {
                     ProductId = i.ProductId,
+                    ProductName = i.ProductName,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice
                 }).ToList()

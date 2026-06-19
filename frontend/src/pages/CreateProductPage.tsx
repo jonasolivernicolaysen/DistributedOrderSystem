@@ -3,12 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 function CreateProductPage() {
     // state
-    interface Product {
-        productId: string,
-        name: string,
-        description: string,
-        price: number
-    }
 
     const [productName, setProductName] = useState("");
     const [productDescription, setProductDescription] = useState("");
@@ -47,6 +41,7 @@ function CreateProductPage() {
                 return;
             }
             alert("Product listing added successfully");
+            navigate("/products")
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");

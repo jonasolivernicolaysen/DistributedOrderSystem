@@ -40,5 +40,24 @@ namespace AuthService.Controllers
 
             return StatusCode((int)response.StatusCode, content);
         }
+
+        [HttpGet("{paymentId}")]
+        public async Task<IActionResult> GetPaymentDetails([FromRoute] Guid paymentId)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"https://localhost:7068/api/payments/{paymentId}");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(content);
+
+            return StatusCode((int)response.StatusCode, content);
+        }
     }
 }

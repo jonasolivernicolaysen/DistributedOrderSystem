@@ -6,10 +6,12 @@ import ProductsPage from "./pages/ProductsPage";
 import CartPage from "./pages/CartPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateProductPage from "./pages/CreateProductPage";
+import PaymentPage from "./pages/PaymentPage";
 
 import Navbar from "./components/Navbar";
 
 function App() {
+
     return (
         <BrowserRouter>
         <Navbar />
@@ -21,6 +23,7 @@ function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/profile" element={<ProfilePage/>} />
                 <Route path="/products/create" element={<CreateProductPage/>} />
+                <Route path="/payments/:paymentId" element={<PaymentPage />} />
             </Routes>
         </BrowserRouter>
     )

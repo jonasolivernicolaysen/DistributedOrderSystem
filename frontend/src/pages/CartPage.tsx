@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"; 
+import { useNavigate } from "react-router-dom";
 
 function CartPage() {
     // state
-
     interface CartItem {
         productId: string,
         name: string,
@@ -11,6 +11,7 @@ function CartPage() {
         quantity: number
     }
     const [products, setProducts] = useState<CartItem[]>([]);
+    const navigate = useNavigate();
 
     // functions
 
@@ -46,6 +47,38 @@ function CartPage() {
         }
     }
 
+    const checkout = async () => {
+        try {
+            // get token
+            const token = localStorage.getItem("token");
+
+            // send request to authservice getcart endpoint
+            const response = await fetch(
+                "https://localhost:7144/api/orders/cart/checkout",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+            if (!response.ok) {
+                alert(`Request failed: ${response.status}`);
+                return;
+            }
+            const data = await response.json();
+            console.log(data);
+            navigate(`/payments/${data.paymentId}`)
+            return data;
+
+            // fetches the items instead of the cart 
+        } catch (error) {
+            console.error(error);
+            alert("Could not connect to the server");
+        }
+    }
+
     useEffect(() => {
         getCartItems();
     }, [])
@@ -61,7 +94,7 @@ function CartPage() {
                 <div className="col-md-2">Quantity</div>
                 <div className="col-md-4 text-end">Sum</div>
             </div>
-
+            
             <div className="container mt-4">
                 <div className="row">
                     {products.map((item: CartItem) => (
@@ -94,6 +127,12 @@ function CartPage() {
                     ))}
                 </div>
             </div>
+            <p>Total sum: </p>
+            <button
+                onClick={() => {
+                    checkout();
+                }}
+            >Checkout</button>
         </div>
     )
 }
