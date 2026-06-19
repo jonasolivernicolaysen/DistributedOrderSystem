@@ -31,13 +31,12 @@ function PaymentPage() {
 
     // functions
 
-    /*
-    const pay = async () => {
+    const pay = async (paymentProcessingId) => {
         try {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                "https://localhost:7144/api/products",
+                "https://localhost:7144/api/payments",
                 {
                     method: "POST",
                     headers: {
@@ -45,29 +44,22 @@ function PaymentPage() {
                         "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        name: productName,
-                        description: productDescription,
-                        price: productPrice
+                        paymentId: paymentProcessingId
                     })
                 });
-            console.log(JSON.stringify({
-                name: productName,
-                description: productDescription,
-                price: productPrice
-            }))
 
             if (!response.ok) {
                 const error = await response.json();
                 alert(error.error);
                 return;
             }
-            alert("Product listing added successfully");
+            console.log("payment completed succesfully")
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");
         }
     };
-    */
+    
 
     useEffect(() => {
 
@@ -183,8 +175,9 @@ function PaymentPage() {
 
                             <button
                                 className="btn btn-success mt-3"
-                                //onClick={pay}
-                            >
+                                onClick={() =>
+                                    {pay(paymentId)}
+                                }>
                                 Pay
                             </button>
 
