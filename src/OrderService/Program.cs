@@ -20,6 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<OrderDbContext>(options => 
     options.UseSqlite("Data source=orders.db"));
 builder.Services.AddSingleton<RabbitMQPublisher>();
+builder.Services.AddHostedService<PaymentCompletedConsumer>();
 builder.Services.AddHostedService<OutboxProcessor>();
 builder.Services.AddScoped<OrderLogic>();
 

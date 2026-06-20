@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 function CartPage() {
     // state
+
     interface CartItem {
         productId: string,
         name: string,

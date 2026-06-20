@@ -90,6 +90,7 @@ namespace PaymentService.Services
                     OrderId = payment.OrderId,
                     PaymentId = payment.PaymentId,
                     TotalPrice = payment.TotalPrice,
+                    UserId = payment.UserId,
                     Items = payment.Items.Select(i => new PaymentCompletedItem
                     {
                         ProductId = i.ProductId,

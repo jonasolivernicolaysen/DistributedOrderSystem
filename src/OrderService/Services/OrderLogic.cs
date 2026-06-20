@@ -164,7 +164,6 @@ namespace OrderService.Services
         {
             try
             {
-
                 var cart = await GetCartAsync(userId);
                 if (!cart.Items.Any())
                     throw new BadRequestException("Cart is empty");
@@ -213,7 +212,8 @@ namespace OrderService.Services
                     Processed = false
                 });
 
-                cart.Items.Clear();
+                // clearing is done in PaymentCompletedConsumer
+                //cart.Items.Clear();
 
                 await _context.SaveChangesAsync();
 
