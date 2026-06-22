@@ -82,11 +82,6 @@ function ProfilePage() {
     const updateListing = async (productId: string) => {
         const token = localStorage.getItem("token");
 
-        console.log(JSON.stringify({
-            name: editName,
-            description: editDescription,
-            price: editPrice
-        }));
         const response = await fetch(
             `https://localhost:7144/api/products/${productId}`,
             {
@@ -128,10 +123,7 @@ function ProfilePage() {
                     updatedStock
                 })
             });
-        console.log(productId, updatedStock)
-        console.log(JSON.stringify({
-            updatedStock
-        }))
+
         if (!response.ok) {
             alert(`Request failed: ${response.status}`);
             return;

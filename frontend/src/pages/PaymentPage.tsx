@@ -27,7 +27,6 @@ function PaymentPage() {
     const navigate = useNavigate();
 
     const { paymentId } = useParams();
-    console.log(paymentId)
 
     // functions
 
@@ -53,7 +52,8 @@ function PaymentPage() {
                 alert(error.error);
                 return;
             }
-            console.log("payment completed succesfully")
+            alert("Payment completed successfully")
+            navigate("/products")
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");
@@ -80,15 +80,11 @@ function PaymentPage() {
                         }
                     });
 
-                console.log(paymentId)
-                console.log(response)
-
                 if (response.ok) {
                     const data = await response.json();
 
                     if (!cancelled)
                         setPayment(data);
-                    console.log(data)
                     break;
                 }
                 await new Promise(resolve => {
@@ -107,8 +103,6 @@ function PaymentPage() {
     if (!payment) {
         return <h2>Preparing payment...</h2>;
     }
-
-    console.log(payment);
 
     // UI
     return (

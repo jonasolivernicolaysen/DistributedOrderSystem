@@ -11,7 +11,9 @@ function LoginPage() {
     const navigate = useNavigate();
 
     // functions
-    const handleLogin = async () => {
+    const handleLogin = async (e: React.FormEvent) => {
+        // prevent page from reloading
+        e.preventDefault();
         try {
             const response = await fetch(
                 "https://localhost:7144/api/auth/login",
@@ -53,33 +55,34 @@ function LoginPage() {
                             <h2 className="text-center mb-4">
                                 Login</h2>
 
-                            <div className="mb-3">
-                                <input
-                                    className="form-control"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    type="text"
-                                    placeholder="Username"
-                                />
-                            </div>
+                            <form onSubmit={handleLogin}>
+                                <div className="mb-3">
+                                    <input
+                                        className="form-control"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        type="text"
+                                        placeholder="Username"
+                                    />
+                                </div>
 
-                            <div className="mb-3">
-                                <input
-                                    className="form-control"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    type="password"
-                                    placeholder="Password"
-                                />
-                            </div>
+                                <div className="mb-3">
+                                    <input
+                                        className="form-control"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        type="password"
+                                        placeholder="Password"
+                                    />
+                                </div>
 
-                            <button
-                                className="btn btn-primary w-100"
-                                onClick={handleLogin}
-                            >
-                                Login
-                            </button>
-
+                                <button
+                                    className="btn btn-primary w-100"
+                                    onClick={handleLogin}
+                                >
+                                    Login
+                                </button>
+                            </form>
                         </div>
                     </div>
 

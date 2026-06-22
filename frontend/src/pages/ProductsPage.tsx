@@ -69,10 +69,6 @@ function ProductsPage() {
                         quantity
                     })
                 });
-            console.log(JSON.stringify({
-                productId,
-                quantity
-            }))
 
             if (!response.ok) {
                 const error = await response.json();

@@ -69,7 +69,6 @@ function CartPage() {
                 return;
             }
             const data = await response.json();
-            console.log(data);
             navigate(`/payments/${data.paymentId}`)
             return data;
 

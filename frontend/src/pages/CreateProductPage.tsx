@@ -29,11 +29,6 @@ function CreateProductPage() {
                         price: productPrice
                     })
                 });
-            console.log(JSON.stringify({
-                name: productName,
-                description: productDescription,
-                price: productPrice
-            }))
 
             if (!response.ok) {
                 const error = await response.json();
