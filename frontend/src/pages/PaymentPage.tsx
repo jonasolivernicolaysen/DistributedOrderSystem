@@ -80,6 +80,8 @@ function PaymentPage() {
                         }
                     });
 
+                console.log(paymentId)
+                console.log(response)
 
                 if (response.ok) {
                     const data = await response.json();

@@ -154,6 +154,15 @@ namespace PaymentService.Messaging
                 return;
             }
 
+            // expire old payments
+            foreach (var p in db.Payments.Where(
+                p => p.PaymentId != evt.PaymentId &&
+                    p.Status != PaymentStatus.Paid
+                ))
+            {
+                p.Status = PaymentStatus.Expired;
+            }
+
             var payment = new PaymentModel
             {
                 PaymentId = evt.PaymentId,

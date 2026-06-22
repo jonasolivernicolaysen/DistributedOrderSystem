@@ -41,7 +41,7 @@ namespace PaymentService.Services
                 if (payment.UserId != currentUserId)
                     throw new UnauthorizedException("User is not authorized to process this payment.");
 
-                if (payment.Status == PaymentStatus.Completed)
+                if (payment.Status == PaymentStatus.Paid)
                     return (payment, false);
 
                 // withdraw here
@@ -82,7 +82,7 @@ namespace PaymentService.Services
                     throw new BadRequestException(detail ?? "Payment failed");
                 }
 
-                payment.Status = PaymentStatus.Completed;
+                payment.Status = PaymentStatus.Paid;
                 payment.PaidAt = DateTime.UtcNow;
 
                 var evt = new PaymentCompletedEvent 
