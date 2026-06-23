@@ -14,6 +14,11 @@ function RegisterPage() {
     const handleRegister = async (e: React.FormEvent) => {
         // prevent page from reloading
         e.preventDefault(); 
+
+        if (hasErrors) {
+            return;
+        }
+
         try {
             const response = await fetch(
                 "https://localhost:7144/api/auth/register",
@@ -31,7 +36,8 @@ function RegisterPage() {
 
             const data = await response.json();
             if (!response.ok) {
-                alert(data.error);
+                const error = data.errors.Password[0]
+                alert(error);
                 return;
             }
 
@@ -45,6 +51,12 @@ function RegisterPage() {
             alert("Could not connect to the server");
         }
     };
+
+    const usernameError = username.length > 0 && username.length < 4 ? "Username must be at least 4 characters" : "";
+    const emailError = email.length > 0 && !email.includes("@") || !email.includes(".") ? "Invalid email address" : "";
+    const passwordError = password.length > 0 && password.length < 8 ? "Password must contain at least 8 characters" : "";
+
+    const hasErrors = usernameError || emailError || passwordError;
 
     // UI
 
@@ -68,8 +80,15 @@ function RegisterPage() {
                                         onChange={(e) => setUsername(e.target.value)}
                                         type="text"
                                         placeholder="Username"
+                                        required
                                     />
                                 </div>
+
+                                {usernameError && (
+                                    <div className="text-danger mt-1">
+                                        {usernameError}
+                                    </div>
+                                )}
 
                                 <div className="mb-3">
                                     <input
@@ -78,8 +97,16 @@ function RegisterPage() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         type="email"
                                         placeholder="Email"
+                                        required
                                     />
                                 </div>
+
+                                {emailError && (
+                                    <div className="text-danger mt-1">
+                                        {emailError}
+                                    </div>
+                                )}
+
 
                                 <div className="mb-3">
                                     <input
@@ -88,12 +115,19 @@ function RegisterPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         type="password"
                                         placeholder="Password"
+                                        required
                                     />
                                 </div>
 
+                                {passwordError && (
+                                    <div className="text-danger mt-1">
+                                        {passwordError}
+                                    </div>
+                                )}
+
                                 <button
+                                    type="submit"
                                     className="btn btn-primary w-100"
-                                    onClick={handleRegister}
                                 >
                                     Register
                                 </button>

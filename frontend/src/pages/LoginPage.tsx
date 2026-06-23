@@ -30,7 +30,8 @@ function LoginPage() {
 
             const data = await response.json();
             if (!response.ok) {
-                alert(data.error);
+                const error = data.detail;
+                alert(error);
                 return;
             }
 
@@ -63,6 +64,7 @@ function LoginPage() {
                                         onChange={(e) => setUsername(e.target.value)}
                                         type="text"
                                         placeholder="Username"
+                                        required
                                     />
                                 </div>
 
@@ -73,12 +75,13 @@ function LoginPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         type="password"
                                         placeholder="Password"
+                                        required
                                     />
                                 </div>
 
                                 <button
+                                    type="submit"
                                     className="btn btn-primary w-100"
-                                    onClick={handleLogin}
                                 >
                                     Login
                                 </button>
