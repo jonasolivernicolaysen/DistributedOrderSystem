@@ -1,27 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+interface Payment {
+    paymentId: string;
+    orderId: string;
+    status: string;
+    paidAt: string;
+    userId: string;
+    totalPrice: number;
+    items: PaymentItem[];
+};
+
+interface PaymentItem {
+    paymentItemId: string;
+    paymentId: string;
+    productId: string;
+    productName: string,
+    unitPrice: number;
+    quantity: number;
+};
 function PaymentPage() {
     // state
-
-    interface Payment {
-        paymentId: string;
-        orderId: string;
-        status: string;
-        paidAt: string;
-        userId: string;
-        totalPrice: number;
-        items: PaymentItem[];
-    };
-
-    interface PaymentItem {
-        paymentItemId: string;
-        paymentId: string;
-        productId: string;
-        productName: string,
-        unitPrice: number;
-        quantity: number;
-    };
 
     const [payment, setPayment] = useState<Payment | null>(null);
     const navigate = useNavigate();

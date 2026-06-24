@@ -14,6 +14,11 @@ function LoginPage() {
     const handleLogin = async (e: React.FormEvent) => {
         // prevent page from reloading
         e.preventDefault();
+
+        if (hasErrors) {
+            return;
+        }
+
         try {
             const response = await fetch(
                 "https://localhost:7144/api/auth/login",
@@ -44,6 +49,18 @@ function LoginPage() {
         }
     };
 
+    const usernameError = username.length > 0 && username.length < 4
+        ? "Must be at least 4 characters"
+        : "";
+
+    const passwordError = password.length > 0 && password.length < 8
+        ? "Must be at least 8 characters"
+        : "";
+
+    const hasErrors = usernameError || passwordError;
+
+    const fieldClass = (error: string) => `form-control ${error ? "is-invalid" : ""}`;
+
     // UI
     return (
         <div className="container mt-5">
@@ -59,24 +76,36 @@ function LoginPage() {
                             <form onSubmit={handleLogin}>
                                 <div className="mb-3">
                                     <input
-                                        className="form-control"
+                                        className={fieldClass(usernameError)}
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         type="text"
                                         placeholder="Username"
                                         required
                                     />
-                                </div>
 
+                                    {usernameError && (
+                                        <div className="invalid-feedback d-block">
+                                            {usernameError}
+                                        </div>
+                                    )}
+                                </div>
+                                
                                 <div className="mb-3">
                                     <input
-                                        className="form-control"
+                                        className={fieldClass(passwordError)}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         type="password"
                                         placeholder="Password"
                                         required
                                     />
+
+                                    {passwordError && (
+                                        <div className="invalid-feedback d-block">
+                                            {passwordError}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <button

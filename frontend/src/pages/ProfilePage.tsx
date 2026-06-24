@@ -1,21 +1,18 @@
 import { useState, useEffect } from "react";
 
+interface UserDetails {
+    username: string,
+    email: string,
+    balance: number
+}
 
-// trenger brukernavn, epost, mine produkter, balance
+interface Product {
+    productId: string,
+    name: string,
+    description: string,
+    price: number
+}
 function ProfilePage() {
-
-    interface UserDetails {
-        username: string,
-        email: string,
-        balance: number
-    }
-
-    interface Product {
-        productId: string,
-        name: string,
-        description: string,
-        price: number
-    }
 
     // state
     const [details, setDetails] = useState<UserDetails>();
@@ -34,50 +31,7 @@ function ProfilePage() {
 
 
     // functions
-    const getUserDetails = async () => {
-        const token = localStorage.getItem("token");
 
-        // send request to authservice getUserDetails endpoint
-        const response = await fetch(
-            "https://localhost:7144/api/auth/profile",
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-
-        if (!response.ok) {
-            alert(`Request failed: ${response.status}`);
-            return;
-        }
-        const data = await response.json();
-        setDetails(data)
-        return data;
-    }
-
-    const getUserProducts = async () => {
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(
-            "https://localhost:7144/api/products/me",
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-
-        if (!response.ok) {
-            alert(`Request failed: ${response.status}`);
-            return;
-        }
-        const data = await response.json();
-        setProducts(data)
-        return data;
-    }
 
     const updateListing = async (productId: string) => {
         const token = localStorage.getItem("token");
@@ -161,10 +115,55 @@ function ProfilePage() {
 
 
     useEffect(() => {
+        const getUserDetails = async () => {
+            const token = localStorage.getItem("token");
+
+            // send request to authservice getUserDetails endpoint
+            const response = await fetch(
+                "https://localhost:7144/api/auth/profile",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+            if (!response.ok) {
+                alert(`Request failed: ${response.status}`);
+                return;
+            }
+            const data = await response.json();
+            setDetails(data)
+            return data;
+        }
+
         getUserDetails();
     }, [])
 
     useEffect(() => {
+        const getUserProducts = async () => {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                "https://localhost:7144/api/products/me",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+            if (!response.ok) {
+                alert(`Request failed: ${response.status}`);
+                return;
+            }
+            const data = await response.json();
+            setProducts(data)
+            return data;
+        }
+
         getUserProducts();
     }, [])
 

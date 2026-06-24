@@ -52,11 +52,21 @@ function RegisterPage() {
         }
     };
 
-    const usernameError = username.length > 0 && username.length < 4 ? "Username must be at least 4 characters" : "";
-    const emailError = email.length > 0 && !email.includes("@") || !email.includes(".") ? "Invalid email address" : "";
-    const passwordError = password.length > 0 && password.length < 8 ? "Password must contain at least 8 characters" : "";
+    const usernameError = username.length > 0 && username.length < 4
+        ? "Must be at least 4 characters"
+        : "";
+
+    const emailError = email.length > 0 && (!email.includes("@") || !email.includes("."))
+        ? "Invalid email address"
+        : "";
+
+    const passwordError = password.length > 0 && password.length < 8
+        ? "Must be at least 8 characters"
+        : "";
 
     const hasErrors = usernameError || emailError || passwordError;
+
+    const fieldClass = (error: string) => `form-control ${error ? "is-invalid" : ""}`;
 
     // UI
 
@@ -75,55 +85,54 @@ function RegisterPage() {
                             <form onSubmit={handleRegister}>
                                 <div className="mb-3">
                                     <input
-                                        className="form-control"
+                                        className={fieldClass(usernameError)}
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         type="text"
                                         placeholder="Username"
                                         required
                                     />
-                                </div>
 
-                                {usernameError && (
-                                    <div className="text-danger mt-1">
-                                        {usernameError}
-                                    </div>
-                                )}
+                                    {usernameError && (
+                                        <div className="invalid-feedback d-block">
+                                            {usernameError}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="mb-3">
                                     <input
-                                        className="form-control"
+                                        className={fieldClass(emailError)}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         type="email"
                                         placeholder="Email"
                                         required
                                     />
+
+                                    {emailError && (
+                                        <div className="invalid-feedback d-block">
+                                            {emailError}
+                                        </div>
+                                    )}
                                 </div>
-
-                                {emailError && (
-                                    <div className="text-danger mt-1">
-                                        {emailError}
-                                    </div>
-                                )}
-
 
                                 <div className="mb-3">
                                     <input
-                                        className="form-control"
+                                        className={fieldClass(passwordError)}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         type="password"
                                         placeholder="Password"
                                         required
                                     />
-                                </div>
 
-                                {passwordError && (
-                                    <div className="text-danger mt-1">
-                                        {passwordError}
-                                    </div>
-                                )}
+                                    {passwordError && (
+                                        <div className="invalid-feedback d-block">
+                                            {passwordError}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <button
                                     type="submit"

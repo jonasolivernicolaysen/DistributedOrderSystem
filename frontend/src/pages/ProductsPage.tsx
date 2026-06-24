@@ -1,31 +1,56 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function ProductsPage() {
-    // state
-    interface Product {
-        productId: string,
-        name: string,
-        description: string,
-        price: number
-    }
+interface Product {
+    productId: string;
+    name: string;
+    description: string;
+    price: number;
+}
 
-    const [products, setProducts] = useState([]);
+function ProductsPage() {
+    const [products, setProducts] = useState<Product[]>([]);
     const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
     const [quantities, setQuantities] = useState<Record<string, number>>({});
-
     const [isAdding, setIsAdding] = useState(false);
 
     const navigate = useNavigate();
 
-    // functions
-    const showProducts = async () => {
+    const addProductToCart = async (productId: string, quantity: number) => {
+        if (isAdding) return;
+        setIsAdding(true);
+
         try {
             const token = localStorage.getItem("token");
-;            
-            const response = await fetch(
-                "https://localhost:7144/api/products",
-                {
+            const response = await fetch("https://localhost:7144/api/orders/cart", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ productId, quantity })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.error);
+                return;
+            }
+
+            alert("Product added to cart");
+        } catch (error) {
+            console.error(error);
+            alert("Could not connect to the server");
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+    useEffect(() => {
+        const showProducts = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch("https://localhost:7144/api/products", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -33,129 +58,90 @@ function ProductsPage() {
                     }
                 });
 
-            if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
-                return;
+                if (!response.ok) {
+                    alert(`Request failed: ${response.status}`);
+                    return;
+                }
+
+                const data = await response.json();
+                setProducts(data);
+            } catch (error) {
+                console.error(error);
+                alert("Could not connect to the server");
             }
-            const data = await response.json();
+        };
 
-            setProducts(data);
-
-        } catch (error) {
-            console.error(error);
-            alert("Could not connect to the server");
-        }
-    };
-
-    const addProductToCart = async (productId: string, quantity: number) => {
-
-        if (isAdding)
-            return;
-        setIsAdding(true);
-
-        try {
-            const token = localStorage.getItem("token");
-
-            const response = await fetch(
-                "https://localhost:7144/api/orders/cart",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        productId,
-                        quantity
-                    })
-                });
-
-            if (!response.ok) {
-                const error = await response.json();
-                alert(error.error);
-                return;
-            }
-            alert("Product added to cart");
-            setIsAdding(false);
-        } catch (error) {
-            console.error(error);
-            alert("Could not connect to the server");
-        }
-    };
-
- 
-    useEffect(() => {
         showProducts();
     }, []);
 
-   
     return (
-        <div>
-            <div>
-                <h1>Products</h1>
+        <div className="container mt-4">
+
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">Products</h4>
                 <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                        navigate("/products/create");
-                    }}
-                >Add Product Listing</button>
+                    className="btn btn-primary btn-sm"
+                    onClick={() => navigate("/products/create")}
+                >
+                    + Add Listing
+                </button>
             </div>
 
-            <div className="container mt-4">
-                <div className="row">
-                    {products.map((product: Product) => (
-                        <div
-                            key={product.productId}
-                            className="col-md-4 mb-4">
+            {/* Grid */}
+            <div className="row">
+                {products.length === 0 && (
+                    <p className="text-muted">No products available.</p>
+                )}
+
+                {products.map((product: Product) => {
+                    const isExpanded = expandedProduct === product.productId;
+
+                    return (
+                        <div key={product.productId} className="col-md-4 mb-3">
                             <div
-                                className="card shadow-sm"
+                                className={`card h-100 shadow-sm ${isExpanded ? "border-primary" : ""}`}
                                 style={{ cursor: "pointer" }}
-                                onClick={() => setExpandedProduct(
-                                    expandedProduct === product.productId ? null : product.productId
-                                )}>
-
+                                onClick={() => setExpandedProduct(isExpanded ? null : product.productId)}
+                            >
                                 <div className="card-body">
-                                    <h5 className="card-title">{product.name}</h5>
+                                    <h6 className="card-title mb-1">{product.name}</h6>
+                                    <span className="text-muted small">${product.price.toFixed(2)}</span>
                                 </div>
 
-                                <div className="card-footer">
-                                    <strong>{product.price}</strong>
-                                </div>
+                                {isExpanded && (
+                                    <div className="card-body border-top pt-3" onClick={(e) => e.stopPropagation()}>
+                                        <p className="text-muted small mb-3">{product.description}</p>
 
-                                {expandedProduct === product.productId && (
-                                    <div className="card-body border-top">
-                                        <p className="card-text">{product.description}</p>
-
-                                        <div className="d-flex align-items-center gap-2">
-                                            
+                                        <div className="d-flex gap-2">
                                             <input
                                                 type="number"
-                                                className="form-control"
-                                                style={{ width: "80px" }}
+                                                className="form-control form-control-sm"
+                                                style={{ width: "70px" }}
+                                                min={1}
                                                 value={quantities[product.productId] ?? 1}
-                                                onClick={(e) => e.stopPropagation()}
-                                                onChange={(e) => {
-                                                    setQuantities({
-                                                        ...quantities, [product.productId]: Number(e.target.value)
-                                                    })
-                                                }}></input>
-
+                                                onChange={(e) => setQuantities({
+                                                    ...quantities,
+                                                    [product.productId]: Number(e.target.value)
+                                                })}
+                                            />
                                             <button
-                                                className="btn btn-primary mt-3 w-100"
+                                                className="btn btn-primary btn-sm flex-grow-1"
                                                 disabled={isAdding}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    addProductToCart(product.productId, quantities[product.productId] ?? 1)
-                                                }}
-                                            >Add to cart</button>
+                                                onClick={() => addProductToCart(
+                                                    product.productId,
+                                                    quantities[product.productId] ?? 1
+                                                )}
+                                            >
+                                                {isAdding ? "Adding…" : "Add to cart"}
+                                            </button>
                                         </div>
                                     </div>
                                 )}
                             </div>
-
                         </div>
-                    ))}
-                </div>
+                    );
+                })}
             </div>
         </div>
     );

@@ -76,8 +76,6 @@ namespace AuthService.Services
                 isPersistent: false,
                 lockoutOnFailure: true);
 
-            
-
             if (result.IsLockedOut)
                 throw new BadRequestException("Account is locked");
 
