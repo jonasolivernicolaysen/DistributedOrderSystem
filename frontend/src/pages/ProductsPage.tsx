@@ -75,21 +75,29 @@ function ProductsPage() {
     }, []);
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-4 pb-5">
 
             {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="mb-0">Products</h4>
-                <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => navigate("/products/create")}
-                >
-                    + Add Listing
-                </button>
+                <div className="d-flex gap-2">
+                    <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => navigate("/cart")}
+                    >
+                        Cart →
+                    </button>
+                    <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => navigate("/products/create")}
+                    >
+                        + Add Listing
+                    </button>
+                </div>
             </div>
 
             {/* Grid */}
-            <div className="row">
+            <div className="row align-items-start">
                 {products.length === 0 && (
                     <p className="text-muted">No products available.</p>
                 )}
@@ -100,7 +108,7 @@ function ProductsPage() {
                     return (
                         <div key={product.productId} className="col-md-4 mb-3">
                             <div
-                                className={`card h-100 shadow-sm ${isExpanded ? "border-primary" : ""}`}
+                                className={`card shadow-sm ${isExpanded ? "border-primary" : ""}`}
                                 style={{ cursor: "pointer" }}
                                 onClick={() => setExpandedProduct(isExpanded ? null : product.productId)}
                             >

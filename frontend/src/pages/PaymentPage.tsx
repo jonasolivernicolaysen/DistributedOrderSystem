@@ -9,176 +9,126 @@ interface Payment {
     userId: string;
     totalPrice: number;
     items: PaymentItem[];
-};
+}
 
 interface PaymentItem {
     paymentItemId: string;
     paymentId: string;
     productId: string;
-    productName: string,
+    productName: string;
     unitPrice: number;
     quantity: number;
-};
-function PaymentPage() {
-    // state
+}
 
+function PaymentPage() {
     const [payment, setPayment] = useState<Payment | null>(null);
     const navigate = useNavigate();
-
     const { paymentId } = useParams();
 
-    // functions
-
-    const pay = async (paymentProcessingId) => {
+    const pay = async (paymentProcessingId: string) => {
         try {
             const token = localStorage.getItem("token");
-
-            const response = await fetch(
-                "https://localhost:7144/api/payments",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        paymentId: paymentProcessingId
-                    })
-                });
+            const response = await fetch("https://localhost:7144/api/payments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ paymentId: paymentProcessingId })
+            });
 
             if (!response.ok) {
                 const error = await response.json();
                 alert(error.error);
                 return;
             }
-            alert("Payment completed successfully")
-            navigate("/products")
+
+            alert("Payment completed successfully");
+            navigate("/products");
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");
         }
     };
-    
 
     useEffect(() => {
-
         let cancelled = false;
-        const getPaymentDetails = async (paymentId) => {
 
+        const getPaymentDetails = async (paymentId: string) => {
             const token = localStorage.getItem("token");
 
-            while (!cancelled)
-            {
-                const response = await fetch(
-                    `https://localhost:7144/api/payments/${paymentId}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        }
-                    });
+            while (!cancelled) {
+                const response = await fetch(`https://localhost:7144/api/payments/${paymentId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
 
                 if (response.ok) {
                     const data = await response.json();
-
-                    if (!cancelled)
-                        setPayment(data);
+                    if (!cancelled) setPayment(data);
                     break;
                 }
-                await new Promise(resolve => {
-                    setTimeout(resolve, 1000)
-                })
-            };
-        }
-        getPaymentDetails(paymentId);
 
-        return () => {
-            cancelled = true;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         };
 
-    }, [paymentId])
+        if (paymentId) getPaymentDetails(paymentId);
+
+        return () => { cancelled = true; };
+    }, [paymentId]);
 
     if (!payment) {
-        return <h2>Preparing payment...</h2>;
+        return (
+            <div className="container mt-4">
+                <div className="text-muted small">Preparing payment...</div>
+            </div>
+        );
     }
 
-    // UI
     return (
-        <div className="container mt-5">
+        <div className="container mt-4">
 
-            <h1>Payment</h1>
 
-            <div className="card mb-4">
-                <div className="card-body">
-
-                    <h5 className="card-title">
-                        Payment information
-                    </h5>
-
-                    <p>
-                        <strong>Payment ID:</strong> {payment.paymentId}
-                    </p>
-
-                </div>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">Payment</h4>
+                <span className="text-muted small">ID: {payment.paymentId}</span>
             </div>
 
-            <h3>Items</h3>
 
-            {/* Header */}
-            <div className="row fw-bold border-bottom pb-2 mb-3">
-                <div className="col-md-5">Product</div>
-                <div className="col-md-2">Price</div>
-                <div className="col-md-2">Quantity</div>
-                <div className="col-md-3 text-end">Sum</div>
+            <div className="row fw-semibold text-muted small border-bottom pb-2 mb-2 px-2">
+                <div className="col-5">Product</div>
+                <div className="col-2 text-end">Price</div>
+                <div className="col-2 text-center">Qty</div>
+                <div className="col-3 text-end">Subtotal</div>
             </div>
 
-            {/* Items */}
-            {(payment).items.map((item: PaymentItem) => (
-                <div
-                    key={item.paymentItemId}
-                    className="row align-items-center border-bottom py-3"
-                >
-                    <div className="col-md-5">
-                        {item.productName}
-                    </div>
 
-                    <div className="col-md-2">
-                        {item.unitPrice} kr
-                    </div>
-
-                    <div className="col-md-2">
-                        {item.quantity}
-                    </div>
-
-                    <div className="col-md-3 text-end">
-                        {(item.unitPrice * item.quantity).toFixed(2)} kr
-                    </div>
+            {payment.items.map((item: PaymentItem) => (
+                <div key={item.paymentItemId} className="row align-items-center border-bottom py-3 px-2">
+                    <div className="col-5 fw-semibold">{item.productName}</div>
+                    <div className="col-2 text-end text-muted small">${item.unitPrice.toFixed(2)}</div>
+                    <div className="col-2 text-center text-muted small">{item.quantity}</div>
+                    <div className="col-3 text-end fw-semibold">${(item.unitPrice * item.quantity).toFixed(2)}</div>
                 </div>
             ))}
 
-            {/* Total */}
-            <div className="card mt-4">
-                <div className="card-body">
 
-                    <div className="row">
-                        <div className="col text-end">
-
-                            <h4>
-                                Total: {payment.totalPrice.toFixed(2)} kr
-                            </h4>
-
-                            <button
-                                className="btn btn-success mt-3"
-                                onClick={() =>
-                                    {pay(paymentId)}
-                                }>
-                                Pay
-                            </button>
-
-                        </div>
-                    </div>
-
+            <div className="d-flex justify-content-between align-items-center mt-4">
+                <span className="text-muted small">
+                    {payment.items.length} item{payment.items.length !== 1 ? "s" : ""}
+                </span>
+                <div className="d-flex align-items-center gap-3">
+                    <span className="fw-semibold">Total: ${payment.totalPrice.toFixed(2)}</span>
+                    <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => pay(paymentId!)}
+                    >
+                        Pay now
+                    </button>
                 </div>
             </div>
 
