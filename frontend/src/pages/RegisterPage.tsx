@@ -41,7 +41,6 @@ function RegisterPage() {
                 return;
             }
 
-            localStorage.setItem("token", data.jwtToken);
             alert("Registration successful");
 
             navigate("/login")

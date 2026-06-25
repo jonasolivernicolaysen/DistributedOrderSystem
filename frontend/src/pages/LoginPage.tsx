@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../pages/AuthContext"
+
 
 function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -24,8 +27,9 @@ function LoginPage() {
                 return;
             }
 
-            localStorage.setItem("token", data.jwtToken);
+            login(data.jwtToken)
             navigate("/products");
+
         } catch (error) {
             console.error(error);
             alert("Could not connect to the server");
