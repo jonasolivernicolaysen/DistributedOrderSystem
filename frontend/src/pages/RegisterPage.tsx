@@ -142,6 +142,10 @@ function RegisterPage() {
                                 </button>
                             </form>
 
+                            <p className="text-center text-muted small mt-3 mb-0">
+                                Already have an account? <a href="/">Login here</a>
+                            </p>
+
                         </div>
                     </div>
 
