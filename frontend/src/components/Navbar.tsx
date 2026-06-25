@@ -1,42 +1,29 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../pages/AuthContext"
 
 function Navbar() {
+    // check if user is logged in by validating token
+    const { isLoggedIn } = useAuth();
+
     return (
+
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div className="container justify-content-center">
+            <div className="container">
+                {isLoggedIn && (
+                    <div className="navbar-nav flex-row gap-3">
+                        <Link className="nav-link" to="/products">Products</Link>
+                        <Link className="nav-link" to="/cart">Cart</Link>
+                        <Link className="nav-link" to="/profile">Profile</Link>
+                        <Link className="nav-link" to="/login">Sign Out</Link>
+                    </div>
+                )}
 
-                <ul className="navbar-nav">
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/register">
-                            Register
-                        </Link>
-                    </li>
-
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/login">
-                            Login
-                        </Link>
-                    </li>
-
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/products">
-                            Products
-                        </Link>
-                    </li>
-
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/cart">
-                            Cart
-                        </Link>
-                    </li>
-
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/profile">
-                            Profile
-                        </Link>
-                    </li>
-                </ul>
-
+                {!isLoggedIn && (
+                    <div className="navbar-nav flex-row gap-3 ms-auto">
+                        <Link className="nav-link" to="/login">Login</Link>
+                        <Link className="nav-link" to="/register">Register</Link>
+                    </div>
+                )}
             </div>
         </nav>
     );

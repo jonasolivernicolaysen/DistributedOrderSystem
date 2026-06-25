@@ -1,47 +1,30 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 function LoginPage() {
-
-    // state
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
     const navigate = useNavigate();
 
-    // functions
     const handleLogin = async (e: React.FormEvent) => {
-        // prevent page from reloading
         e.preventDefault();
-
-        if (hasErrors) {
-            return;
-        }
+        if (hasErrors) return;
 
         try {
-            const response = await fetch(
-                "https://localhost:7144/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        username,
-                        password
-                    })
-                });
+            const response = await fetch("https://localhost:7144/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
 
             const data = await response.json();
             if (!response.ok) {
-                const error = data.detail;
-                alert(error);
+                alert(data.detail);
                 return;
             }
 
             localStorage.setItem("token", data.jwtToken);
-
             navigate("/products");
         } catch (error) {
             console.error(error);
@@ -57,23 +40,19 @@ function LoginPage() {
         ? "Must be at least 8 characters"
         : "";
 
-    const hasErrors = usernameError || passwordError;
+    const hasErrors = !!(usernameError || passwordError);
 
     const fieldClass = (error: string) => `form-control ${error ? "is-invalid" : ""}`;
 
-    // UI
     return (
         <div className="container mt-5">
             <div className="row justify-content-center">
                 <div className="col-md-4">
-
                     <div className="card shadow">
                         <div className="card-body">
+                            <h2 className="text-center mb-4">Login</h2>
 
-                            <h2 className="text-center mb-4">
-                                Login</h2>
-
-                            <form onSubmit={handleLogin}>
+                            <form onSubmit={handleLogin} noValidate>
                                 <div className="mb-3">
                                     <input
                                         className={fieldClass(usernameError)}
@@ -82,15 +61,13 @@ function LoginPage() {
                                         type="text"
                                         placeholder="Username"
                                         required
+                                        autoComplete="username"
                                     />
-
                                     {usernameError && (
-                                        <div className="invalid-feedback d-block">
-                                            {usernameError}
-                                        </div>
+                                        <div className="invalid-feedback d-block">{usernameError}</div>
                                     )}
                                 </div>
-                                
+
                                 <div className="mb-3">
                                     <input
                                         className={fieldClass(passwordError)}
@@ -99,25 +76,27 @@ function LoginPage() {
                                         type="password"
                                         placeholder="Password"
                                         required
+                                        autoComplete="current-password"
                                     />
-
                                     {passwordError && (
-                                        <div className="invalid-feedback d-block">
-                                            {passwordError}
-                                        </div>
+                                        <div className="invalid-feedback d-block">{passwordError}</div>
                                     )}
                                 </div>
 
                                 <button
                                     type="submit"
                                     className="btn btn-primary w-100"
+                                    disabled={hasErrors}
                                 >
                                     Login
                                 </button>
                             </form>
+
+                            <p className="text-center text-muted small mt-3 mb-0">
+                                Don't have an account? <a href="/register">Register here</a>
+                            </p>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
