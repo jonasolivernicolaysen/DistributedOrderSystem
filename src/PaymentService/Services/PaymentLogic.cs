@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PaymentService.Data;
 using PaymentService.Exceptions;
+using PaymentService.Messaging;
 using PaymentService.Models;
 using PaymentService.Models.DTOs;
 using SharedContracts;
@@ -15,15 +17,19 @@ namespace PaymentService.Services
         private readonly PaymentDbContext _context;
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<PaymentLogic> _logger;
 
         public PaymentLogic(
             PaymentDbContext context,
             HttpClient httpClient,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<PaymentLogic> logger
+            )
         {
             _context = context;
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         public async Task<(PaymentModel payment, bool shouldBeProcessed)> ProcessOrderPayment(PaymentDto dto, string currentUserId)
@@ -114,7 +120,7 @@ namespace PaymentService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }

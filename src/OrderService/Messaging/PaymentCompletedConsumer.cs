@@ -12,6 +12,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+
 
 namespace OrderService.Messaging
 {
@@ -20,14 +22,18 @@ namespace OrderService.Messaging
         private readonly IServiceScopeFactory _scopeFactory;
         private IConnection _connection;
         private IModel _channel;
+        private readonly ILogger<PaymentCompletedConsumer> _logger;
 
         private const string QueueName = "orders-payments";
         private const string ExchangeName = "payments";
 
         public PaymentCompletedConsumer(
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            ILogger<PaymentCompletedConsumer> logger
+            )
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
 
             var factory = new ConnectionFactory
             {
@@ -107,7 +113,7 @@ namespace OrderService.Messaging
 
                     var evt = JsonSerializer.Deserialize<PaymentCompletedEvent>(json);
 
-                    Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                    _logger.LogInformation($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                     if (evt == null)
                     {
                         _channel.BasicReject(ea.DeliveryTag, requeue: false);
@@ -118,7 +124,7 @@ namespace OrderService.Messaging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    _logger.LogError(ex.ToString());
 
                     var retryCount = GetRetryCount(ea);
 
@@ -161,7 +167,7 @@ namespace OrderService.Messaging
             if (alreadyProcessed)
             {
                 // message has already been processed
-                Console.WriteLine("message has already been processed");
+                _logger.LogInformation("message has already been processed");
                 return;
             }
 
@@ -171,11 +177,6 @@ namespace OrderService.Messaging
 
             // empty cart
             cart.Items.Clear();
-            Console.WriteLine("cart is cleared");
-            Console.WriteLine("cart is cleared");
-            Console.WriteLine("cart is cleared");
-            Console.WriteLine("cart is cleared");
-            Console.WriteLine("cart is cleared");
 
             db.ProcessedMessages.Add(new ProcessedMessage
             {

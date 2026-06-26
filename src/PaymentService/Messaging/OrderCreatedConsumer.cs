@@ -9,21 +9,26 @@ using SharedContracts;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace PaymentService.Messaging
 {
     public class OrderCreatedConsumer : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<OrderCreatedConsumer> _logger;
         private IConnection _connection;
         private IModel _channel;
 
         private const string ExchangeName = "orders";
         private const string QueueName = "payment-service";
 
-        public OrderCreatedConsumer(IServiceScopeFactory scopeFactory)
+        public OrderCreatedConsumer(
+            IServiceScopeFactory scopeFactory,
+            ILogger<OrderCreatedConsumer> logger)
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
 
             var factory = new ConnectionFactory
             {
@@ -111,7 +116,7 @@ namespace PaymentService.Messaging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    _logger.LogError(ex.ToString());
 
                     var retryCount = GetRetryCount(ea);
 
@@ -150,7 +155,7 @@ namespace PaymentService.Messaging
 
             if (alreadyProcessed)
             {
-                Console.WriteLine("Order already processed");
+                _logger.LogInformation("Order already processed");
                 return;
             }
 
@@ -194,7 +199,7 @@ namespace PaymentService.Messaging
             } 
                 catch (DbUpdateException ex)
             {
-                Console.WriteLine(ex);
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }

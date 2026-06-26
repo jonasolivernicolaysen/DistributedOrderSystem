@@ -7,7 +7,7 @@ import CartPage from "./pages/CartPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateProductPage from "./pages/CreateProductPage";
 import PaymentPage from "./pages/PaymentPage";
-import { AuthProvider } from "./pages/AuthContext";
+import { AuthProvider } from "./components/AuthContext";
 
 import Navbar from "./components/Navbar";
 

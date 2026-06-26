@@ -1,6 +1,7 @@
 import { useState } from "react";
+import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../pages/AuthContext"
+import { useAuth } from "../components/AuthContext"
 
 
 function LoginPage() {
@@ -10,7 +11,7 @@ function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: SubmitEvent) => {
         e.preventDefault();
         if (hasErrors) return;
 

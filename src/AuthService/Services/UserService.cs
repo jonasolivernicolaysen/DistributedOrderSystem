@@ -81,7 +81,6 @@ namespace AuthService.Services
 
             if (!result.Succeeded)
                 throw new BadRequestException("Invalid username or password");
-            Console.WriteLine(result.ToString());
             return result;
         }
 

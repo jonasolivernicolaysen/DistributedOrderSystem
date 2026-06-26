@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../pages/AuthContext"
+import { useAuth } from "./AuthContext"
 
 function Navbar() {
     // check if user is logged in by validating token

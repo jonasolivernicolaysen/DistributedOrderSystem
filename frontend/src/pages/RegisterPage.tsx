@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import type { SubmitEvent } from "react";
 function RegisterPage() {
     // state
     const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ function RegisterPage() {
 
     // functions
 
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleRegister = async (e: SubmitEvent) => {
         // prevent page from reloading
         e.preventDefault(); 
 
@@ -36,8 +36,8 @@ function RegisterPage() {
 
             const data = await response.json();
             if (!response.ok) {
-                const error = data.errors.Password[0]
-                alert(error);
+                console.log(data.detail)
+                alert(data.detail);
                 return;
             }
 
@@ -51,16 +51,18 @@ function RegisterPage() {
         }
     };
 
-    const usernameError = username.length > 0 && username.length < 4
-        ? "Must be at least 4 characters"
+    const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{3,19}$/;
+    const usernameError = username.length > 0 && !usernameRegex.test(username)
+        ? "Username must start with a letter and be 4-20 characters long. Only letters, numbers, and underscores are allowed."
         : "";
 
-    const emailError = email.length > 0 && (!email.includes("@") || !email.includes("."))
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailError = email.length > 0 && !emailRegex.test(email)
         ? "Invalid email address"
         : "";
-
-    const passwordError = password.length > 0 && password.length < 8
-        ? "Must be at least 8 characters"
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};:'"\\|,.<>/?]).{8,}$/;
+    const passwordError = password.length > 0 && !passwordRegex.test(password)
+        ? "Password must be at least 8 characters and contain uppercase, lowercase, a number, and a special character."
         : "";
 
     const hasErrors = usernameError || emailError || passwordError;

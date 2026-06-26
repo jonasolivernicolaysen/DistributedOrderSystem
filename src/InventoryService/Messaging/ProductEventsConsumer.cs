@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text;
 using InventoryService.Mappers;
 using InventoryService.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace InventoryService.Messaging
 {
@@ -17,13 +18,17 @@ namespace InventoryService.Messaging
         private readonly IServiceScopeFactory _scopeFactory;
         private IConnection _connection;
         private RabbitMQ.Client.IModel _channel;
+        private ILogger<ProductEventsConsumer> _logger;
 
         private const string QueueName = "inventory-products";
         private const string ExchangeName = "products";
 
-        public ProductEventsConsumer(IServiceScopeFactory scopeFactory)
+        public ProductEventsConsumer(
+            IServiceScopeFactory scopeFactory,
+            ILogger<ProductEventsConsumer> logger)
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
 
             var factory = new ConnectionFactory
             {
@@ -107,7 +112,7 @@ namespace InventoryService.Messaging
                             {
                                 var evt = JsonSerializer.Deserialize<ProductCreatedEvent>(json);
 
-                                Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                                _logger.LogInformation($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                                 if (evt == null)
                                 {
                                     _channel.BasicReject(ea.DeliveryTag, requeue: false);
@@ -121,7 +126,7 @@ namespace InventoryService.Messaging
                             {
                                 var evt = JsonSerializer.Deserialize<ProductUpdatedEvent>(json);
 
-                                Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                                _logger.LogInformation($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                                 if (evt == null)
                                 {
                                     _channel.BasicReject(ea.DeliveryTag, requeue: false);
@@ -134,7 +139,7 @@ namespace InventoryService.Messaging
                             {
                                 var evt = JsonSerializer.Deserialize<ProductDeletedEvent>(json);
 
-                                Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                                _logger.LogInformation($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                                 if (evt == null)
                                 {
                                     _channel.BasicReject(ea.DeliveryTag, requeue: false);
@@ -150,7 +155,7 @@ namespace InventoryService.Messaging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    _logger.LogError(ex.ToString());
 
                     var retryCount = GetRetryCount(ea);
 

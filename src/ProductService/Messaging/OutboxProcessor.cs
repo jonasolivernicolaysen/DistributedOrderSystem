@@ -9,6 +9,7 @@ using SharedContracts;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace ProductService.Messaging
 {
@@ -16,13 +17,16 @@ namespace ProductService.Messaging
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RabbitMQPublisher _publisher;
+        private ILogger<OutboxProcessor> _logger;
 
         public OutboxProcessor(
             IServiceScopeFactory scopeFactory,
-            RabbitMQPublisher publisher)
+            RabbitMQPublisher publisher,
+            ILogger<OutboxProcessor> logger)
         {
             _scopeFactory = scopeFactory;
             _publisher = publisher;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -73,7 +77,7 @@ namespace ProductService.Messaging
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Outbox message: {ex.Message}");
+                        _logger.LogInformation($"Outbox message: {ex.Message}");
                     }
                 }
                 await db.SaveChangesAsync();

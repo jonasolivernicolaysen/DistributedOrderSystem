@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace AuthService.Controllers
 {
@@ -12,10 +13,14 @@ namespace AuthService.Controllers
     public class PaymentProxyController : ControllerBase
     {
         private readonly HttpClient _httpClient;
+        private ILogger<PaymentProxyController> _logger;
 
-        public PaymentProxyController(HttpClient httpClient)
+        public PaymentProxyController(
+            HttpClient httpClient,
+            ILogger<PaymentProxyController> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
 
@@ -55,7 +60,7 @@ namespace AuthService.Controllers
             var response = await _httpClient.SendAsync(request);
 
             var content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(content);
+            _logger.LogInformation(content);
 
             return StatusCode((int)response.StatusCode, content);
         }

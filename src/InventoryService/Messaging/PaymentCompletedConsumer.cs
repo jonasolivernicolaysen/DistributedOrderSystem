@@ -11,6 +11,7 @@ using InventoryService.Messaging;
 using SharedContracts;
 using System.Runtime.InteropServices;
 using InventoryService.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace InventoryService.Messaging
 {
@@ -19,13 +20,19 @@ namespace InventoryService.Messaging
         private readonly IServiceScopeFactory _scopeFactory;
         private IConnection _connection;
         private IModel _channel;
+        private ILogger<PaymentCompletedConsumer> _logger;
 
         private const string QueueName = "inventory-payments";
         private const string ExchangeName = "payments";
 
-        public PaymentCompletedConsumer(IServiceScopeFactory scopeFactory)
+
+        public PaymentCompletedConsumer(
+            IServiceScopeFactory scopeFactory,
+            ILogger<PaymentCompletedConsumer> logger
+            )
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
 
             var factory = new ConnectionFactory
             {
@@ -105,7 +112,7 @@ namespace InventoryService.Messaging
 
                     var evt = JsonSerializer.Deserialize<PaymentCompletedEvent>(json);
 
-                    Console.WriteLine($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
+                    _logger.LogInformation($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                     if (evt == null)
                     {
                         _channel.BasicReject(ea.DeliveryTag, requeue: false);
@@ -116,7 +123,7 @@ namespace InventoryService.Messaging
                 }   
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    _logger.LogError(ex.ToString());
 
                     var retryCount = GetRetryCount(ea);
 
@@ -157,7 +164,7 @@ namespace InventoryService.Messaging
             if (alreadyProcessed)
             {
                 // message has already been processed
-                Console.WriteLine("message has already been processed");
+                _logger.LogInformation("message has already been processed");
                 return;
             }
 
