@@ -3,6 +3,7 @@ import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext"
 import { toast } from "react-toastify"
+import { apiFetch } from "../services/api"
 
 
 function LoginPage() {
@@ -17,7 +18,7 @@ function LoginPage() {
         if (hasErrors) return;
 
         try {
-            const response = await fetch("https://localhost:7144/api/auth/login", {
+            const response = await apiFetch("https://localhost:7144/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),

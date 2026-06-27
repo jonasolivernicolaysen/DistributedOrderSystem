@@ -12,10 +12,17 @@ function Navbar() {
                 {isLoggedIn && (
                     <>
                         <div className="navbar-nav flex-row gap-4 justify-content-center w-100">
-                            <Link className="nav-link" to="/products">Products</Link>
-                            <Link className="nav-link" to="/cart">Cart</Link>
-                            <Link className="nav-link" to="/profile">Profile</Link>
-                            
+                            <Link className="nav-link" to="/products">
+                                <i className="bi bi-box-seam"></i>
+                            </Link>
+
+                            <Link className="nav-link" to="/cart">
+                                <i className="bi bi-cart3"></i>
+                            </Link>
+
+                            <Link className="nav-link" to="/profile">
+                                <i className="bi bi-person-circle"></i>
+                            </Link>
                         </div>
 
                         <div className="position-absolute end-0 me-3">

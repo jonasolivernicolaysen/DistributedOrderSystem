@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify"
-
+import { apiFetch } from "../services/api"
 interface Payment {
     paymentId: string;
     orderId: string;
@@ -29,7 +29,7 @@ function PaymentPage() {
     const pay = async (paymentProcessingId: string) => {
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/payments", {
+            const response = await apiFetch("https://localhost:7144/api/payments", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,7 +59,7 @@ function PaymentPage() {
             const token = localStorage.getItem("token");
 
             while (!cancelled) {
-                const response = await fetch(`https://localhost:7144/api/payments/${paymentId}`, {
+                const response = await apiFetch(`https://localhost:7144/api/payments/${paymentId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

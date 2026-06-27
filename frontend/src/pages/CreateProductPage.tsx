@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify"
+import { apiFetch } from "../services/api"
 
 function CreateProductPage() {
     const [productName, setProductName] = useState("");
@@ -12,7 +13,7 @@ function CreateProductPage() {
     const addProductListing = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/products", {
+            const response = await apiFetch("https://localhost:7144/api/products", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

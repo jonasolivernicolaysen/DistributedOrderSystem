@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import { apiFetch } from "../services/api"
+ 
 interface CartItem {
     productId: string;
     name: string;
@@ -18,7 +19,7 @@ function CartPage() {
     const checkout = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/orders/cart/checkout", {
+            const response = await apiFetch("https://localhost:7144/api/orders/cart/checkout", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -46,7 +47,7 @@ function CartPage() {
     const getCartItems = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/orders/cart", {
+            const response = await apiFetch("https://localhost:7144/api/orders/cart", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -69,7 +70,7 @@ function CartPage() {
 
     const deleteItem = async (productId: string) => {
         const token = localStorage.getItem("token");
-        const response = await fetch(`https://localhost:7144/api/orders/cart/${productId}`, {
+        const response = await apiFetch(`https://localhost:7144/api/orders/cart/${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { apiFetch } from "../services/api"
 
 interface UserDetails {
     username: string;
@@ -31,7 +32,7 @@ function ProfilePage() {
 
     const updateListing = async (productId: string) => {
         const token = localStorage.getItem("token");
-        const response = await fetch(`https://localhost:7144/api/products/${productId}`, {
+        const response = await apiFetch(`https://localhost:7144/api/products/${productId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -56,7 +57,7 @@ function ProfilePage() {
 
     const updateStock = async (productId: string, updatedStock: number) => {
         const token = localStorage.getItem("token");
-        const response = await fetch(`https://localhost:7144/api/inventory/${productId}`, {
+        const response = await apiFetch(`https://localhost:7144/api/inventory/${productId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -76,7 +77,7 @@ function ProfilePage() {
 
     const deleteListing = async (productId: string) => {
         const token = localStorage.getItem("token");
-        const response = await fetch(`https://localhost:7144/api/products/${productId}`, {
+        const response = await apiFetch(`https://localhost:7144/api/products/${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -98,7 +99,7 @@ function ProfilePage() {
     useEffect(() => {
         const getUserDetails = async () => {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/auth/profile", {
+            const response = await apiFetch("https://localhost:7144/api/auth/profile", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -120,7 +121,7 @@ function ProfilePage() {
     useEffect(() => {
         const getUserProducts = async () => {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/products/me", {
+            const response = await apiFetch("https://localhost:7144/api/products/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { SubmitEvent } from "react";
 import { toast } from "react-toastify"
+import { apiFetch } from "../services/api"
+
 function RegisterPage() {
     // state
     const [username, setUsername] = useState("");
@@ -21,7 +23,7 @@ function RegisterPage() {
         }
 
         try {
-            const response = await fetch(
+            const response = await apiFetch(
                 "https://localhost:7144/api/auth/register",
                 {
                     method: "POST",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { apiFetch } from "../services/api"
 
 interface Product {
     productId: string;
@@ -23,7 +24,7 @@ function ProductsPage() {
 
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://localhost:7144/api/orders/cart", {
+            const response = await apiFetch("https://localhost:7144/api/orders/cart", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -51,7 +52,7 @@ function ProductsPage() {
         const showProducts = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await fetch("https://localhost:7144/api/products", {
+                const response = await apiFetch("https://localhost:7144/api/products", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
