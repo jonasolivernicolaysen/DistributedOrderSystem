@@ -31,12 +31,12 @@ function ProfilePage() {
     const [showDelete, setShowDelete] = useState(false);
 
     const updateListing = async (productId: string) => {
-        const token = localStorage.getItem("token");
+        const jwt = localStorage.getItem("jwt");
         const response = await apiFetch(`https://localhost:7144/api/products/${productId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${jwt}`
             },
             body: JSON.stringify({
                 productId: selectedProduct?.productId,
@@ -56,12 +56,12 @@ function ProfilePage() {
     };
 
     const updateStock = async (productId: string, updatedStock: number) => {
-        const token = localStorage.getItem("token");
+        const jwt = localStorage.getItem("jwt");
         const response = await apiFetch(`https://localhost:7144/api/inventory/${productId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${jwt}`
             },
             body: JSON.stringify({ updatedStock })
         });
@@ -76,12 +76,12 @@ function ProfilePage() {
     };
 
     const deleteListing = async (productId: string) => {
-        const token = localStorage.getItem("token");
+        const jwt = localStorage.getItem("jwt");
         const response = await apiFetch(`https://localhost:7144/api/products/${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${jwt}`
             },
             body: JSON.stringify({ productId })
         });
@@ -98,12 +98,12 @@ function ProfilePage() {
 
     useEffect(() => {
         const getUserDetails = async () => {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
             const response = await apiFetch("https://localhost:7144/api/auth/profile", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${jwt}`
                 }
             });
 
@@ -120,12 +120,12 @@ function ProfilePage() {
 
     useEffect(() => {
         const getUserProducts = async () => {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
             const response = await apiFetch("https://localhost:7144/api/products/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${jwt}`
                 }
             });
 

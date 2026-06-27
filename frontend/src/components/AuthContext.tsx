@@ -9,16 +9,17 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isLoggedIn, setIsLoggedIn] = useState(
-        !!localStorage.getItem("token")
+        !!localStorage.getItem("jwt")
     );
 
-    const login = (token: string) => {
-        localStorage.setItem("token", token);
+    const login = (jwt: string, refreshToken: string) => {
+        localStorage.setItem("jwt", jwt);
+        localStorage.setItem("refreshToken", refreshToken);
         setIsLoggedIn(true);
     }
 
     const logout = () => {
-        localStorage.removeItem("token");
+        localStorage.removeItem("jwt");
         setIsLoggedIn(false)
     }
 

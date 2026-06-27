@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext"
 
 function Navbar() {
-    // check if user is logged in by validating token
+    // check if user is logged in by validating jwt
     const { isLoggedIn } = useAuth();
     const { logout } = useAuth();
 
@@ -26,7 +26,9 @@ function Navbar() {
                         </div>
 
                         <div className="position-absolute end-0 me-3">
-                            <Link className="nav-link text-white" onClick={logout} to="/login">Sign Out</Link>
+                            <Link className="nav-link text-white" onClick={logout} to="/login">
+                                <i className="bi-box-arrow-right"></i>
+                            </Link>
                         </div>
                     </>
                 )}

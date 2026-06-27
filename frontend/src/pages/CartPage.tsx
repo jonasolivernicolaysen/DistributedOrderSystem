@@ -18,12 +18,12 @@ function CartPage() {
 
     const checkout = async () => {
         try {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
             const response = await apiFetch("https://localhost:7144/api/orders/cart/checkout", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${jwt}`
                 }
             });
 
@@ -46,12 +46,12 @@ function CartPage() {
 
     const getCartItems = async () => {
         try {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
             const response = await apiFetch("https://localhost:7144/api/orders/cart", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${jwt}`
                 }
             });
 
@@ -69,12 +69,12 @@ function CartPage() {
     };
 
     const deleteItem = async (productId: string) => {
-        const token = localStorage.getItem("token");
+        const jwt = localStorage.getItem("jwt");
         const response = await apiFetch(`https://localhost:7144/api/orders/cart/${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${jwt}`
             }
         });
 

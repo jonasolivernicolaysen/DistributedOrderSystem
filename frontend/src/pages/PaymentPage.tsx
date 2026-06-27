@@ -28,12 +28,12 @@ function PaymentPage() {
 
     const pay = async (paymentProcessingId: string) => {
         try {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
             const response = await apiFetch("https://localhost:7144/api/payments", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${jwt}`
                 },
                 body: JSON.stringify({ paymentId: paymentProcessingId })
             });
@@ -56,14 +56,14 @@ function PaymentPage() {
         let cancelled = false;
 
         const getPaymentDetails = async (paymentId: string) => {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
 
             while (!cancelled) {
                 const response = await apiFetch(`https://localhost:7144/api/payments/${paymentId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        "Authorization": `Bearer ${jwt}`
                     }
                 });
 

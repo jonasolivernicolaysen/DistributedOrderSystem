@@ -23,12 +23,12 @@ function ProductsPage() {
         setIsAdding(true);
 
         try {
-            const token = localStorage.getItem("token");
+            const jwt = localStorage.getItem("jwt");
             const response = await apiFetch("https://localhost:7144/api/orders/cart", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${jwt}`
                 },
                 body: JSON.stringify({ productId, quantity })
             });
@@ -51,12 +51,12 @@ function ProductsPage() {
     useEffect(() => {
         const showProducts = async () => {
             try {
-                const token = localStorage.getItem("token");
+                const jwt = localStorage.getItem("jwt");
                 const response = await apiFetch("https://localhost:7144/api/products", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        "Authorization": `Bearer ${jwt}`
                     }
                 });
 
