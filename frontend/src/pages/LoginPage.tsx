@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext"
+import { toast } from "react-toastify"
 
 
 function LoginPage() {
@@ -24,7 +25,7 @@ function LoginPage() {
 
             const data = await response.json();
             if (!response.ok) {
-                alert(data.detail);
+                toast.error(data.detail);
                 return;
             }
 
@@ -33,7 +34,7 @@ function LoginPage() {
 
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
     };
 

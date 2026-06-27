@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { SubmitEvent } from "react";
+import { toast } from "react-toastify"
 function RegisterPage() {
     // state
     const [username, setUsername] = useState("");
@@ -36,18 +37,17 @@ function RegisterPage() {
 
             const data = await response.json();
             if (!response.ok) {
-                console.log(data.detail)
-                alert(data.detail);
+                toast.error(data.detail);
                 return;
             }
 
-            alert("Registration successful");
+            toast.success("Registration successful");
 
             navigate("/login")
 
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
     };
 

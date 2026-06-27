@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 interface Product {
     productId: string;
@@ -33,14 +34,14 @@ function ProductsPage() {
 
             if (!response.ok) {
                 const error = await response.json();
-                alert(error.error);
+                toast.error(error.error);
                 return;
             }
 
-            alert("Product added to cart");
+            toast.success("Product added to cart");
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         } finally {
             setIsAdding(false);
         }
@@ -59,7 +60,7 @@ function ProductsPage() {
                 });
 
                 if (!response.ok) {
-                    alert(`Request failed: ${response.status}`);
+                    toast.error(`Request failed: ${response.status}`);
                     return;
                 }
 
@@ -67,7 +68,7 @@ function ProductsPage() {
                 setProducts(data);
             } catch (error) {
                 console.error(error);
-                alert("Could not connect to the server");
+                toast.error("Could not connect to the server");
             }
         };
 

@@ -8,6 +8,8 @@ import ProfilePage from "./pages/ProfilePage";
 import CreateProductPage from "./pages/CreateProductPage";
 import PaymentPage from "./pages/PaymentPage";
 import { AuthProvider } from "./components/AuthContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.css";
 
 import Navbar from "./components/Navbar";
 
@@ -27,6 +29,14 @@ function App() {
                     <Route path="/products/create" element={<CreateProductPage/>} />
                     <Route path="/payments/:paymentId" element={<PaymentPage />} />
                 </Routes>
+                <ToastContainer
+                    position="bottom-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop
+                    closeOnClick
+                    pauseOnHover>
+                </ToastContainer>
             </BrowserRouter>
         </AuthProvider>
     )

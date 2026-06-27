@@ -160,6 +160,32 @@ namespace OrderService.Services
             return cart;
         }
 
+        public async Task<Cart> DeleteItemFromCartAsync(string userId, Guid productId)
+        {
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null)
+                throw new NotFoundException("Cart not found");
+
+            var item = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            if (item == null)
+                throw new NotFoundException("Item not found");
+
+            _context.CartItems.Remove(item);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return cart;
+        }
+
         public async Task<OrderModel> CheckoutAsync(string userId)
         {
             try

@@ -81,6 +81,24 @@ namespace AuthService.Controllers
             return StatusCode((int)response.StatusCode, content);
         }
 
+        [HttpDelete("cart/{productId}")]
+        public async Task<IActionResult> DeleteItemFromCart(Guid productId)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                $"https://localhost:7199/api/orders/cart/{productId}");
+
+            // forward jwt token
+            var token = Request.Headers["Authorization"].ToString();
+            request.Headers.Add("Authorization", token);
+
+            var response = await _httpClient.SendAsync(request);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            return StatusCode((int)response.StatusCode, content);
+        }
+
         [HttpPost("cart/checkout")]
         public async Task<IActionResult> CheckoutCart()
         {

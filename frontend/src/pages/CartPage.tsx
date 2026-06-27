@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 interface CartItem {
     productId: string;
@@ -13,6 +14,7 @@ function CartPage() {
     const [products, setProducts] = useState<CartItem[]>([]);
     const navigate = useNavigate();
 
+
     const checkout = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -25,7 +27,7 @@ function CartPage() {
             });
 
             if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
+                toast.error(`Request failed: ${response.status}`);
                 return;
             }
 
@@ -33,7 +35,7 @@ function CartPage() {
             navigate(`/payments/${data.paymentId}`);
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
     };
 
@@ -41,31 +43,49 @@ function CartPage() {
         (sum, item) => sum + item.unitPrice * item.quantity, 0
     );
 
-    useEffect(() => {
-        const getCartItems = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await fetch("https://localhost:7144/api/orders/cart", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    alert(`Request failed: ${response.status}`);
-                    return;
+    const getCartItems = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("https://localhost:7144/api/orders/cart", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 }
+            });
 
-                const data = await response.json();
-                setProducts(data.items);
-            } catch (error) {
-                console.error(error);
-                alert("Could not connect to the server");
+            if (!response.ok) {
+                toast.error(`Request failed: ${response.status}`);
+                return;
             }
-        };
 
+            const data = await response.json();
+            setProducts(data.items);
+        } catch (error) {
+            console.error(error);
+            toast.error("Could not connect to the server");
+        }
+    };
+
+    const deleteItem = async (productId: string) => {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`https://localhost:7144/api/orders/cart/${productId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            toast.error(`Request failed: ${response.status}`);
+            return;
+        }
+
+        getCartItems();
+    };
+
+    useEffect(() => {
         getCartItems();
     }, []);
 
@@ -107,6 +127,12 @@ function CartPage() {
                         <div key={item.productId} className="row align-items-center border-bottom py-3 px-2">
                             <div className="col-5">
                                 <span className="fw-semibold">{item.name}</span>
+                                <button
+                                    className="btn btn-outline-danger btn-sm ms-2"
+                                    onClick={() => deleteItem(item.productId)}
+                                >
+                                    Delete
+                                </button>
                             </div>
                             <div className="col-2 text-end text-muted small">
                                 ${item.unitPrice.toFixed(2)}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 interface UserDetails {
     username: string;
@@ -45,11 +46,11 @@ function ProfilePage() {
         });
 
         if (!response.ok) {
-            alert(`Request failed: ${response.status}`);
+            toast.error(`Request failed: ${response.status}`);
             return;
         }
 
-        alert("Product listing updated successfully");
+        toast.success("Product listing updated successfully");
         setShowUpdateListing(false);
     };
 
@@ -65,11 +66,11 @@ function ProfilePage() {
         });
 
         if (!response.ok) {
-            alert(`Request failed: ${response.status}`);
+            toast.error(`Request failed: ${response.status}`);
             return;
         }
 
-        alert("Stock updated successfully");
+        toast.success("Stock updated successfully");
         setShowUpdateStock(false);
     };
 
@@ -85,11 +86,11 @@ function ProfilePage() {
         });
 
         if (!response.ok) {
-            alert(`Request failed: ${response.status}`);
+            toast.error(`Request failed: ${response.status}`);
             return;
         }
 
-        alert("Successfully deleted product");
+        toast.success("Successfully deleted product");
         setShowDelete(false);
         setProducts(products.filter(p => p.productId !== productId));
     };
@@ -106,7 +107,7 @@ function ProfilePage() {
             });
 
             if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
+                toast.error(`Request failed: ${response.status}`);
                 return;
             }
 
@@ -128,7 +129,7 @@ function ProfilePage() {
             });
 
             if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
+                toast.error(`Request failed: ${response.status}`);
                 return;
             }
 

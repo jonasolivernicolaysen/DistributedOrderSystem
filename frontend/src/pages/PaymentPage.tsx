@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify"
 
 interface Payment {
     paymentId: string;
@@ -39,15 +40,15 @@ function PaymentPage() {
 
             if (!response.ok) {
                 const error = await response.json();
-                alert(error.error);
+                toast.error(error.error);
                 return;
             }
 
-            alert("Payment completed successfully");
+            toast.success("Payment completed successfully");
             navigate("/products");
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
     };
 

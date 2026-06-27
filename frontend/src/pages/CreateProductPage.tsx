@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"
 
 function CreateProductPage() {
     const [productName, setProductName] = useState("");
@@ -26,15 +27,15 @@ function CreateProductPage() {
 
             if (!response.ok) {
                 const error = await response.json();
-                alert(error.error);
+                toast.error(error.error);
                 return;
             }
 
-            alert("Product listing added successfully");
+            toast.success("Product listing added successfully");
             navigate("/products");
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
     };
 
