@@ -17,8 +17,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<PaymentDbContext>(options => 
-    options.UseSqlite("Data source=payments.db"));
+builder.Services.AddDbContext<PaymentDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<PaymentLogic>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();

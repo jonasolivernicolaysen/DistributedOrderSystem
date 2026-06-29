@@ -10,12 +10,16 @@ namespace OrderService.Messaging
         private readonly IConnection _connection;
         private readonly RabbitMQ.Client.IModel _channel;
 
-        public RabbitMQPublisher()
+        public RabbitMQPublisher(
+            IConfiguration configuration
+            )
         {
-            var factory = new ConnectionFactory()
+            var factory = new ConnectionFactory
             {
-                HostName = "localhost",
-                Port = 5672
+                HostName = configuration["RabbitMQ:HostName"],
+                Port = int.Parse(configuration["RabbitMQ:Port"]!),
+                UserName = configuration["RabbitMQ:UserName"],
+                Password = configuration["RabbitMQ:Password"]
             };
 
             _connection = factory.CreateConnection();

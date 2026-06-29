@@ -259,7 +259,7 @@ function ProfilePage() {
                                                 step={0.01}
                                                 onChange={(e) => setEditPrice(e.target.value === "" ? "" : Number(e.target.value))}
                                             />
-                                            <span className="input-group-text">kr</span>
+                                            <span className="input-group-text">$</span>
                                         </div>
                                     </div>
                                 </div>

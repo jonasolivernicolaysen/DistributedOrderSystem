@@ -1,0 +1,60 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  authservice:
+    container_name: productservice
+
+    build:
+      context: .
+      dockerfile: src/AuthService/Dockerfile
+
+    ports:
+      - "7144:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/auth.db
+      RabbitMQ__HostName: rabbitmq
+      Services__ProductService: http://productservice:8080
+
+    volumes:
+      - auth-data:/app/data
+
+    depends_on:
+      - rabbitmq
+      - productservice
+
+  productservice:
+    container_name: productservice
+
+    build:
+      context: .
+      dockerfile: src/ProductService/Dockerfile
+
+    ports:
+      - "7165:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/products.db
+
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+
+    volumes:
+      - product-data:/app/data
+
+    depends_on:
+      - rabbitmq
+
+volumes:
+  auth-data:
+  product-data:

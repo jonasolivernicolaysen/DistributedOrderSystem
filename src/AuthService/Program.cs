@@ -55,7 +55,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddSingleton<RefreshTokenProvider>();
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlite("Data Source=auth.db"));
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddProblemDetails();
 
@@ -136,6 +137,14 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+
+    db.Database.Migrate();
+}
 
 // instantiate roles
 using (var scope = app.Services.CreateScope())

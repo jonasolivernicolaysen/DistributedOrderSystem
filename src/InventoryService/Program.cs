@@ -17,8 +17,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<InventoryDbContext>(options => 
-    options.UseSqlite("Data source=inventory.db"));
+
+builder.Services.AddDbContext<InventoryDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHostedService<PaymentCompletedConsumer>();
 builder.Services.AddHostedService<ProductEventsConsumer>();

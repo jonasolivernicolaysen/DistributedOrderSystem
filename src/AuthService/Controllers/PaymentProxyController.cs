@@ -14,13 +14,16 @@ namespace AuthService.Controllers
     {
         private readonly HttpClient _httpClient;
         private ILogger<PaymentProxyController> _logger;
+        private readonly string _paymentServiceUrl;
 
         public PaymentProxyController(
             HttpClient httpClient,
-            ILogger<PaymentProxyController> logger)
+            ILogger<PaymentProxyController> logger,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _paymentServiceUrl = configuration["Services:PaymentService"];
         }
 
 
@@ -29,7 +32,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "https://localhost:7068/api/payments");
+                $"{_paymentServiceUrl}/api/payments");
 
             // forward the body
             var json = JsonSerializer.Serialize(dto);
@@ -51,7 +54,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7068/api/payments/{paymentId}");
+                $"{_paymentServiceUrl}/api/payments/{paymentId}");
 
             // forward jwt token
             var token = Request.Headers["Authorization"].ToString();

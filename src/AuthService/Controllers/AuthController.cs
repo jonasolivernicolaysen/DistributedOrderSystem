@@ -18,17 +18,20 @@ namespace IdentityPlatformApi.Controllers
         private readonly UserService _userService;
         private readonly RefreshTokenProvider _refreshTokenProvider;
         private readonly AuthDbContext _context;
+        private readonly IConfiguration _configuration;
 
 
         public AuthController(
             UserService userService,
             RefreshTokenProvider refreshTokenProvider,
-            AuthDbContext context
+            AuthDbContext context,
+            IConfiguration configuration
             )
         {
             _userService = userService;
             _refreshTokenProvider = refreshTokenProvider;
             _context = context;
+            _configuration = configuration;
         }
 
 

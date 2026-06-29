@@ -25,14 +25,18 @@ namespace InventoryService.Messaging
 
         public ProductEventsConsumer(
             IServiceScopeFactory scopeFactory,
-            ILogger<ProductEventsConsumer> logger)
+            ILogger<ProductEventsConsumer> logger,
+            IConfiguration configuration)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
 
             var factory = new ConnectionFactory
             {
-                HostName = "localhost"
+                HostName = configuration["RabbitMQ:HostName"],
+                Port = int.Parse(configuration["RabbitMQ:Port"]!),
+                UserName = configuration["RabbitMQ:UserName"],
+                Password = configuration["RabbitMQ:Password"]
             };
 
             _connection = factory.CreateConnection();

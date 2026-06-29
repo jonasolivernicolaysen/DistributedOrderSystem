@@ -29,7 +29,8 @@ namespace OrderService.Messaging
 
         public PaymentCompletedConsumer(
             IServiceScopeFactory scopeFactory,
-            ILogger<PaymentCompletedConsumer> logger
+            ILogger<PaymentCompletedConsumer> logger,
+            IConfiguration configuration
             )
         {
             _scopeFactory = scopeFactory;
@@ -37,7 +38,10 @@ namespace OrderService.Messaging
 
             var factory = new ConnectionFactory
             {
-                HostName = "localhost"
+                HostName = configuration["RabbitMQ:HostName"],
+                Port = int.Parse(configuration["RabbitMQ:Port"]!),
+                UserName = configuration["RabbitMQ:UserName"],
+                Password = configuration["RabbitMQ:Password"]
             };
 
             _connection = factory.CreateConnection();
