@@ -34,37 +34,45 @@ namespace PaymentService.Messaging
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = _scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-
-                var messages = await db.OutboxMessages
-                    .Where(m => !m.Processed)
-                    .ToListAsync();
-
-                foreach (var msg in messages)
+                try
                 {
-                    try
+                    using var scope = _scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+
+                    var messages = await db.OutboxMessages
+                        .Where(m => !m.Processed)
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var msg in messages)
                     {
-                        // using switch in case outboxprocessor should take multiple types in the future
-                        switch (msg.Type)
+                        try
                         {
-                            case nameof(PaymentCompletedEvent):
-                                var paymentCompletedEvent = JsonSerializer.Deserialize<PaymentCompletedEvent>(msg.Payload);
-                                if (paymentCompletedEvent != null)
-                                {
-                                    _publisher.Publish(paymentCompletedEvent, "payments");
-                                    msg.Processed = true;
-                                }
-                                break;
+                            // using switch in case outboxprocessor should take multiple types in the future
+                            switch (msg.Type)
+                            {
+                                case nameof(PaymentCompletedEvent):
+                                    var paymentCompletedEvent = JsonSerializer.Deserialize<PaymentCompletedEvent>(msg.Payload);
+                                    if (paymentCompletedEvent != null)
+                                    {
+                                        _publisher.Publish(paymentCompletedEvent, "payments");
+                                        msg.Processed = true;
+                                    }
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogInformation($"Outbox message: {ex.Message}");
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogInformation($"Outbox message: {ex.Message}");
-                    }
+                    await db.SaveChangesAsync(stoppingToken);
+                    await Task.Delay(2000, stoppingToken);
+
                 }
-                await db.SaveChangesAsync();
-                await Task.Delay(2000, stoppingToken);
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "OutboxProcessor failed");
+                }
             }
         }
     }

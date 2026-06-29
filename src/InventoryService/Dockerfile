@@ -3,10 +3,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
 
-# Copy the entire repository
 COPY . .
 
-# Publish the application
 RUN dotnet publish src/InventoryService/InventoryService.csproj -c Release -o /app/publish
 
 # Runtime stage

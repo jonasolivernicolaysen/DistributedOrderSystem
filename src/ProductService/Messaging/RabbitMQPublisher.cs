@@ -21,6 +21,7 @@ namespace ProductService.Messaging
                 Password = configuration["RabbitMQ:Password"]
             };
 
+            // retry logic which keeps service from crashing when running docker
             while (true)
             {
                 try
@@ -37,9 +38,9 @@ namespace ProductService.Messaging
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex,
-                        "RabbitMQ unavailable. Retrying in 3 seconds...");
+                        "RabbitMQ unavailable. Retrying in 5 seconds...");
 
-                    Thread.Sleep(3000);
+                    Thread.Sleep(5000);
                 }
             }
         }

@@ -39,8 +39,28 @@ namespace InventoryService.Messaging
                 Password = configuration["RabbitMQ:Password"]
             };
 
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
+            // retry logic which keeps service from crashing when running docker
+            while (true)
+            {
+                try
+                {
+                    logger.LogInformation("Connecting to RabbitMQ...");
+
+                    _connection = factory.CreateConnection();
+                    _channel = _connection.CreateModel();
+
+                    logger.LogInformation("Connected to RabbitMQ.");
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex,
+                        "RabbitMQ unavailable. Retrying in 5 seconds...");
+
+                    Thread.Sleep(5000);
+                }
+            }
 
             // declare main queue and queue and bind exchange to queue
             _channel.ExchangeDeclare(ExchangeName, ExchangeType.Fanout, durable: true);

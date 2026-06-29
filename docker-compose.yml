@@ -8,7 +8,7 @@ services:
       - "15672:15672"
 
   authservice:
-    container_name: productservice
+    container_name: authservice
 
     build:
       context: .
@@ -22,6 +22,7 @@ services:
       ConnectionStrings__DefaultConnection: Data Source=/app/data/auth.db
       RabbitMQ__HostName: rabbitmq
       Services__ProductService: http://productservice:8080
+      Services__InventoryService: http://inventoryservice:8080
 
     volumes:
       - auth-data:/app/data
@@ -55,6 +56,32 @@ services:
     depends_on:
       - rabbitmq
 
+  inventoryservice:
+    container_name: inventoryservice
+
+    build:
+      context: .
+      dockerfile: src/InventoryService/Dockerfile
+
+    ports:
+      - "7248:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/inventory.db
+
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+
+    volumes:
+      - inventory-data:/app/data
+
+    depends_on:
+      - rabbitmq
+
 volumes:
   auth-data:
   product-data:
+  inventory-data:
