@@ -23,28 +23,6 @@ namespace AuthService.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
-        {
-            var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                $"{_orderServiceUrl}/api/orders");
-
-            // forward the body
-            var json = JsonSerializer.Serialize(dto);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            // forward jwt token
-            var token = Request.Headers["Authorization"].ToString();
-            request.Headers.Add("Authorization", token);
-
-            var response = await _httpClient.SendAsync(request);
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            return StatusCode((int)response.StatusCode, content);
-        }
-
         [HttpPost("cart")]
         public async Task<IActionResult> AddItemToCart([FromBody] AddToCartDto dto)
         {

@@ -18,18 +18,21 @@ namespace PaymentService.Services
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<PaymentLogic> _logger;
+        private readonly string _authServiceUrl;
 
         public PaymentLogic(
             PaymentDbContext context,
             HttpClient httpClient,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<PaymentLogic> logger
+            ILogger<PaymentLogic> logger,
+            IConfiguration configuration
             )
         {
             _context = context;
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
+            _authServiceUrl = configuration["Services:AuthService"];
         }
 
         public async Task<(PaymentModel payment, bool shouldBeProcessed)> ProcessOrderPayment(PaymentDto dto, string currentUserId)
@@ -53,7 +56,7 @@ namespace PaymentService.Services
                 // withdraw here
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    $"https://localhost:7144/api/auth/withdraw");
+                    $"{_authServiceUrl}/api/auth/withdraw");
 
                 var token = _httpContextAccessor
                     .HttpContext?

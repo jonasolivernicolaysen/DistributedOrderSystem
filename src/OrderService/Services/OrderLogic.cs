@@ -15,14 +15,19 @@ namespace OrderService.Services
         private readonly OrderDbContext _context;
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string _inventoryServiceUrl;
+        private readonly string _productServiceUrl;
         public OrderLogic(
             OrderDbContext context, 
             HttpClient httpClient,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration)
         {
             _context = context;
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
+            _inventoryServiceUrl = configuration["Services:InventoryService"];
+            _productServiceUrl = configuration["Services:ProductService"];
         }
 
         public async Task<CartItem> AddItemToCartAsync(AddToCartDto dto, string userId)
@@ -45,7 +50,7 @@ namespace OrderService.Services
             // get stock from InventoryService
             var inventoryRequest = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7248/api/inventory/{dto.ProductId}");
+                $"{_inventoryServiceUrl}/api/inventory/{dto.ProductId}");
 
             var token = _httpContextAccessor
                 .HttpContext?
@@ -84,7 +89,7 @@ namespace OrderService.Services
             // get product by productId from ProductService
             var productRequest = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7165/api/products/{dto.ProductId}");
+                $"{_productServiceUrl}/api/products/{dto.ProductId}");
 
             // forward jwt token
             productRequest.Headers.Add("Authorization", token);

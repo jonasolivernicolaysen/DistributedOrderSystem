@@ -99,6 +99,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Data Source=/app/data/orders.db
+      Services__InventoryService: http://inventoryservice:8080
+      Services__ProductService: http://productservice:8080
 
       RabbitMQ__HostName: rabbitmq
       RabbitMQ__Port: "5672"
@@ -111,8 +113,35 @@ services:
     depends_on:
       - rabbitmq
 
+  paymentservice:
+      container_name: paymentservice
+
+      build:
+        context: .
+        dockerfile: src/PaymentService/Dockerfile
+
+      ports:
+        - "7068:8080"
+
+      environment:
+        ASPNETCORE_ENVIRONMENT: Development
+        ConnectionStrings__DefaultConnection: Data Source=/app/data/payments.db
+        Services__AuthService: http://authservice:8080
+
+        RabbitMQ__HostName: rabbitmq
+        RabbitMQ__Port: "5672"
+        RabbitMQ__UserName: guest
+        RabbitMQ__Password: guest
+
+      volumes:
+        - payment-data:/app/data
+
+      depends_on:
+        - rabbitmq
+
 volumes:
   auth-data:
   product-data:
   inventory-data:
   order-data:
+  payment-data:
