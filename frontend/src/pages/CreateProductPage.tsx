@@ -13,7 +13,7 @@ function CreateProductPage() {
     const addProductListing = async () => {
         try {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/products", {
+            const response = await apiFetch("http://localhost:7144/api/products", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

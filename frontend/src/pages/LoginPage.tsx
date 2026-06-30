@@ -18,7 +18,7 @@ function LoginPage() {
         if (hasErrors) return;
 
         try {
-            const response = await apiFetch("https://localhost:7144/api/auth/login", {
+            const response = await apiFetch("http://localhost:7144/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),

@@ -19,7 +19,7 @@ function CartPage() {
     const checkout = async () => {
         try {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/orders/cart/checkout", {
+            const response = await apiFetch("http://localhost:7144/api/orders/cart/checkout", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -47,7 +47,7 @@ function CartPage() {
     const getCartItems = async () => {
         try {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/orders/cart", {
+            const response = await apiFetch("http://localhost:7144/api/orders/cart", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -70,7 +70,7 @@ function CartPage() {
 
     const deleteItem = async (productId: string) => {
         const jwt = localStorage.getItem("jwt");
-        const response = await apiFetch(`https://localhost:7144/api/orders/cart/${productId}`, {
+        const response = await apiFetch(`http://localhost:7144/api/orders/cart/${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

@@ -24,7 +24,7 @@ function ProductsPage() {
 
         try {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/orders/cart", {
+            const response = await apiFetch("http://localhost:7144/api/orders/cart", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -52,7 +52,7 @@ function ProductsPage() {
         const showProducts = async () => {
             try {
                 const jwt = localStorage.getItem("jwt");
-                const response = await apiFetch("https://localhost:7144/api/products", {
+                const response = await apiFetch("http://localhost:7144/api/products", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

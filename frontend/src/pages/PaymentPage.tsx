@@ -29,7 +29,7 @@ function PaymentPage() {
     const pay = async (paymentProcessingId: string) => {
         try {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/payments", {
+            const response = await apiFetch("http://localhost:7144/api/payments", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,7 +59,7 @@ function PaymentPage() {
             const jwt = localStorage.getItem("jwt");
 
             while (!cancelled) {
-                const response = await apiFetch(`https://localhost:7144/api/payments/${paymentId}`, {
+                const response = await apiFetch(`http://localhost:7144/api/payments/${paymentId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

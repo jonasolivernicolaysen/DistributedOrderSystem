@@ -114,30 +114,47 @@ services:
       - rabbitmq
 
   paymentservice:
-      container_name: paymentservice
+    container_name: paymentservice
 
-      build:
-        context: .
-        dockerfile: src/PaymentService/Dockerfile
+    build:
+      context: .
+      dockerfile: src/PaymentService/Dockerfile
 
-      ports:
-        - "7068:8080"
+    ports:
+      - "7068:8080"
 
-      environment:
-        ASPNETCORE_ENVIRONMENT: Development
-        ConnectionStrings__DefaultConnection: Data Source=/app/data/payments.db
-        Services__AuthService: http://authservice:8080
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/payments.db
+      Services__AuthService: http://authservice:8080
 
-        RabbitMQ__HostName: rabbitmq
-        RabbitMQ__Port: "5672"
-        RabbitMQ__UserName: guest
-        RabbitMQ__Password: guest
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
 
-      volumes:
-        - payment-data:/app/data
+    volumes:
+      - payment-data:/app/data
 
-      depends_on:
-        - rabbitmq
+    depends_on:
+      - rabbitmq
+
+  frontend:
+    container_name: frontend
+
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    ports:
+      - "5173:5173"
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    depends_on:
+      - authservice
 
 volumes:
   auth-data:

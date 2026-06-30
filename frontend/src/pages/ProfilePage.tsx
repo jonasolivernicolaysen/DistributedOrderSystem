@@ -32,7 +32,7 @@ function ProfilePage() {
 
     const updateListing = async (productId: string) => {
         const jwt = localStorage.getItem("jwt");
-        const response = await apiFetch(`https://localhost:7144/api/products/${productId}`, {
+        const response = await apiFetch(`http://localhost:7144/api/products/${productId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -57,7 +57,7 @@ function ProfilePage() {
 
     const updateStock = async (productId: string, updatedStock: number) => {
         const jwt = localStorage.getItem("jwt");
-        const response = await apiFetch(`https://localhost:7144/api/inventory/${productId}`, {
+        const response = await apiFetch(`http://localhost:7144/api/inventory/${productId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -77,7 +77,7 @@ function ProfilePage() {
 
     const deleteListing = async (productId: string) => {
         const jwt = localStorage.getItem("jwt");
-        const response = await apiFetch(`https://localhost:7144/api/products/${productId}`, {
+        const response = await apiFetch(`http://localhost:7144/api/products/${productId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -99,7 +99,7 @@ function ProfilePage() {
     useEffect(() => {
         const getUserDetails = async () => {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/auth/profile", {
+            const response = await apiFetch("http://localhost:7144/api/auth/profile", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -121,7 +121,7 @@ function ProfilePage() {
     useEffect(() => {
         const getUserProducts = async () => {
             const jwt = localStorage.getItem("jwt");
-            const response = await apiFetch("https://localhost:7144/api/products/me", {
+            const response = await apiFetch("http://localhost:7144/api/products/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
