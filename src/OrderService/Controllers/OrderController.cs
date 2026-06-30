@@ -62,6 +62,16 @@ namespace OrderService.Controllers
             });
         }
 
+        [HttpDelete("cart/{productId}")]
+        public async Task<IActionResult> DeleteItemFromCart(Guid productId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            Cart cart = await _orderLogic.DeleteItemFromCartAsync(userId, productId);
+
+            return NoContent();
+        }
+
         [HttpPost("cart/checkout")]
         public async Task<IActionResult> Checkout()
         {

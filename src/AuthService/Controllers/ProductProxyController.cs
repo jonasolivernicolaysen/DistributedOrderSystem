@@ -12,10 +12,15 @@ namespace AuthService.Controllers
     public class ProductProxyController : ControllerBase
     {
         private readonly HttpClient _httpClient;
+        private readonly string _productServiceUrl;
 
-        public ProductProxyController(HttpClient httpClient)
+        public ProductProxyController(
+            HttpClient httpClient,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _productServiceUrl = configuration["Services:ProductService"];
+
         }
 
 
@@ -24,7 +29,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                "https://localhost:7165/api/products");
+                $"{_productServiceUrl}/api/products");
 
 
             // forward jwt token
@@ -43,7 +48,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                "https://localhost:7165/api/products/me");
+                $"{_productServiceUrl}/api/products/me");
 
 
             // forward jwt token
@@ -62,7 +67,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7165/api/products/{Id}");
+                $"{_productServiceUrl}/api/products/{Id}");
 
             // forward jwt token
             var token = Request.Headers["Authorization"].ToString();
@@ -80,7 +85,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "https://localhost:7165/api/products");
+                $"{_productServiceUrl}/api/products");
 
             // forward the body
             var json = JsonSerializer.Serialize(dto);
@@ -102,7 +107,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Put,
-                $"https://localhost:7165/api/products/{productId}");
+                $"{_productServiceUrl}/api/products/{productId}");
 
             // forward the body
             var json = JsonSerializer.Serialize(dto);
@@ -124,7 +129,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Delete,
-                $"https://localhost:7165/api/products/{productId}");
+                $"{_productServiceUrl}/api/products/{productId}");
 
             // forward jwt token
             var token = Request.Headers["Authorization"].ToString();

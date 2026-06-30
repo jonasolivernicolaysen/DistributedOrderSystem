@@ -15,14 +15,19 @@ namespace OrderService.Services
         private readonly OrderDbContext _context;
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string _inventoryServiceUrl;
+        private readonly string _productServiceUrl;
         public OrderLogic(
             OrderDbContext context, 
             HttpClient httpClient,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration)
         {
             _context = context;
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
+            _inventoryServiceUrl = configuration["Services:InventoryService"];
+            _productServiceUrl = configuration["Services:ProductService"];
         }
 
         public async Task<CartItem> AddItemToCartAsync(AddToCartDto dto, string userId)
@@ -45,7 +50,7 @@ namespace OrderService.Services
             // get stock from InventoryService
             var inventoryRequest = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7248/api/inventory/{dto.ProductId}");
+                $"{_inventoryServiceUrl}/api/inventory/{dto.ProductId}");
 
             var token = _httpContextAccessor
                 .HttpContext?
@@ -84,7 +89,7 @@ namespace OrderService.Services
             // get product by productId from ProductService
             var productRequest = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7165/api/products/{dto.ProductId}");
+                $"{_productServiceUrl}/api/products/{dto.ProductId}");
 
             // forward jwt token
             productRequest.Headers.Add("Authorization", token);
@@ -160,11 +165,36 @@ namespace OrderService.Services
             return cart;
         }
 
+        public async Task<Cart> DeleteItemFromCartAsync(string userId, Guid productId)
+        {
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null)
+                throw new NotFoundException("Cart not found");
+
+            var item = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            if (item == null)
+                throw new NotFoundException("Item not found");
+
+            _context.CartItems.Remove(item);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return cart;
+        }
+
         public async Task<OrderModel> CheckoutAsync(string userId)
         {
             try
             {
-
                 var cart = await GetCartAsync(userId);
                 if (!cart.Items.Any())
                     throw new BadRequestException("Cart is empty");
@@ -213,7 +243,8 @@ namespace OrderService.Services
                     Processed = false
                 });
 
-                cart.Items.Clear();
+                // clearing is done in PaymentCompletedConsumer
+                //cart.Items.Clear();
 
                 await _context.SaveChangesAsync();
 

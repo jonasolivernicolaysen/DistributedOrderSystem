@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PaymentService.Data;
 using PaymentService.Exceptions;
+using PaymentService.Messaging;
 using PaymentService.Models;
 using PaymentService.Models.DTOs;
 using SharedContracts;
@@ -15,15 +17,22 @@ namespace PaymentService.Services
         private readonly PaymentDbContext _context;
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<PaymentLogic> _logger;
+        private readonly string _authServiceUrl;
 
         public PaymentLogic(
             PaymentDbContext context,
             HttpClient httpClient,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<PaymentLogic> logger,
+            IConfiguration configuration
+            )
         {
             _context = context;
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
+            _authServiceUrl = configuration["Services:AuthService"];
         }
 
         public async Task<(PaymentModel payment, bool shouldBeProcessed)> ProcessOrderPayment(PaymentDto dto, string currentUserId)
@@ -41,13 +50,13 @@ namespace PaymentService.Services
                 if (payment.UserId != currentUserId)
                     throw new UnauthorizedException("User is not authorized to process this payment.");
 
-                if (payment.Status == PaymentStatus.Completed)
+                if (payment.Status == PaymentStatus.Paid)
                     return (payment, false);
 
                 // withdraw here
                 var request = new HttpRequestMessage(
                     HttpMethod.Post,
-                    $"https://localhost:7144/api/auth/withdraw");
+                    $"{_authServiceUrl}/api/auth/withdraw");
 
                 var token = _httpContextAccessor
                     .HttpContext?
@@ -82,7 +91,7 @@ namespace PaymentService.Services
                     throw new BadRequestException(detail ?? "Payment failed");
                 }
 
-                payment.Status = PaymentStatus.Completed;
+                payment.Status = PaymentStatus.Paid;
                 payment.PaidAt = DateTime.UtcNow;
 
                 var evt = new PaymentCompletedEvent 
@@ -90,6 +99,7 @@ namespace PaymentService.Services
                     OrderId = payment.OrderId,
                     PaymentId = payment.PaymentId,
                     TotalPrice = payment.TotalPrice,
+                    UserId = payment.UserId,
                     Items = payment.Items.Select(i => new PaymentCompletedItem
                     {
                         ProductId = i.ProductId,
@@ -113,7 +123,7 @@ namespace PaymentService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }

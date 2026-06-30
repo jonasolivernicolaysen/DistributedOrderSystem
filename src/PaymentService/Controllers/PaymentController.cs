@@ -8,6 +8,7 @@ using PaymentService.Models.DTOs;
 using PaymentService.Services;
 using SharedContracts;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace PaymentService.Controllers
 {
@@ -18,13 +19,16 @@ namespace PaymentService.Controllers
     {
         private readonly PaymentLogic _paymentLogic;
         private readonly RabbitMQPublisher _publisher;
+        private readonly ILogger<PaymentController> _logger;
 
         public PaymentController(
             PaymentLogic paymentLogic,
-            RabbitMQPublisher publisher)
+            RabbitMQPublisher publisher,
+            ILogger<PaymentController> logger)
         {
             _paymentLogic = paymentLogic;
             _publisher = publisher;
+            _logger = logger;
         }
 
 
@@ -43,7 +47,7 @@ namespace PaymentService.Controllers
         public async Task<IActionResult> GetPaymentDetails([FromRoute] Guid paymentId)
         {
             var payment = await _paymentLogic.GetPaymentDetailsAsync(paymentId);
-            Console.WriteLine(payment);
+            _logger.LogInformation(payment.ToString());
             return Ok(payment);
         }
     }

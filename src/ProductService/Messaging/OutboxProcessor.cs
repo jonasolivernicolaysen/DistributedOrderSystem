@@ -1,13 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using ProductService.Messaging;
 using ProductService.Data;
-using ProductService.Models;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using SharedContracts;
-using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 
 namespace ProductService.Messaging
@@ -16,67 +9,97 @@ namespace ProductService.Messaging
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RabbitMQPublisher _publisher;
+        private readonly ILogger<OutboxProcessor> _logger;
 
         public OutboxProcessor(
             IServiceScopeFactory scopeFactory,
-            RabbitMQPublisher publisher)
+            RabbitMQPublisher publisher,
+            ILogger<OutboxProcessor> logger)
         {
             _scopeFactory = scopeFactory;
             _publisher = publisher;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = _scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
-
-                var messages = await db.OutboxMessages
-                    .Where(m => !m.Processed)
-                    .ToListAsync();
-
-                foreach (var msg in messages)
+                try
                 {
-                    try
+                    using var scope = _scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
+
+                    var messages = await db.OutboxMessages
+                        .Where(m => !m.Processed)
+                        .OrderBy(m => m.CreatedAt)
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var msg in messages)
                     {
-                        // using switch so outboxprocessor can handle multiple types 
-                        switch (msg.Type)
+                        try
                         {
-                            case nameof(ProductCreatedEvent):
-                                var productCreatedEvent = JsonSerializer.Deserialize<ProductCreatedEvent>(msg.Payload);
-                                if (productCreatedEvent != null)
-                                {
-                                    _publisher.Publish(productCreatedEvent, "products");
-                                    msg.Processed = true;
-                                }
-                                break;
+                            switch (msg.Type)
+                            {
+                                case nameof(ProductCreatedEvent):
+                                    {
+                                        var evt = JsonSerializer.Deserialize<ProductCreatedEvent>(msg.Payload);
 
-                            case nameof(ProductUpdatedEvent):
-                                var productUpdatedEvent = JsonSerializer.Deserialize<ProductUpdatedEvent>(msg.Payload);
-                                if (productUpdatedEvent != null)
-                                {
-                                    _publisher.Publish(productUpdatedEvent, "products");
-                                    msg.Processed = true;
-                                }
-                                break;
+                                        if (evt != null)
+                                        {
+                                            _publisher.Publish(evt, "products");
+                                            msg.Processed = true;
+                                        }
 
-                            case nameof(ProductDeletedEvent):
-                                var productDeletedEvent = JsonSerializer.Deserialize<ProductDeletedEvent>(msg.Payload);
-                                if (productDeletedEvent != null)
-                                {
-                                    _publisher.Publish(productDeletedEvent, "products");
-                                    msg.Processed = true;
-                                }
-                                break;
+                                        break;
+                                    }
+
+                                case nameof(ProductUpdatedEvent):
+                                    {
+                                        var evt = JsonSerializer.Deserialize<ProductUpdatedEvent>(msg.Payload);
+
+                                        if (evt != null)
+                                        {
+                                            _publisher.Publish(evt, "products");
+                                            msg.Processed = true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case nameof(ProductDeletedEvent):
+                                    {
+                                        var evt = JsonSerializer.Deserialize<ProductDeletedEvent>(msg.Payload);
+
+                                        if (evt != null)
+                                        {
+                                            _publisher.Publish(evt, "products");
+                                            msg.Processed = true;
+                                        }
+
+                                        break;
+                                    }
+
+                                default:
+                                    _logger.LogWarning("Unknown outbox message type: {Type}", msg.Type);
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex,
+                                "Failed processing outbox message {Id}", msg.Id);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Outbox message: {ex.Message}");
-                    }
+
+                    await db.SaveChangesAsync(stoppingToken);
                 }
-                await db.SaveChangesAsync();
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "OutboxProcessor failed.");
+                }
+
                 await Task.Delay(2000, stoppingToken);
             }
         }

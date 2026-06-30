@@ -1,31 +1,35 @@
-﻿using PaymentService.Data;
-using PaymentService.Messaging;
-using PaymentService.Models;
+﻿using OrderService.Data;
+using OrderService.Exceptions;
+using OrderService.Messaging;
+using OrderService.Services;
+using OrderService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using SharedContracts;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace PaymentService.Messaging
+
+namespace OrderService.Messaging
 {
-    public class OrderCreatedConsumer : BackgroundService
+    public class PaymentCompletedConsumer : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<OrderCreatedConsumer> _logger;
         private IConnection _connection;
         private IModel _channel;
+        private readonly ILogger<PaymentCompletedConsumer> _logger;
 
-        private const string ExchangeName = "orders";
-        private const string QueueName = "payment-service";
+        private const string QueueName = "orders-payments";
+        private const string ExchangeName = "payments";
 
-        public OrderCreatedConsumer(
+        public PaymentCompletedConsumer(
             IServiceScopeFactory scopeFactory,
-            ILogger<OrderCreatedConsumer> logger,
+            ILogger<PaymentCompletedConsumer> logger,
             IConfiguration configuration
             )
         {
@@ -68,7 +72,7 @@ namespace PaymentService.Messaging
 
             var mainQueueArgs = new Dictionary<string, object>
             {
-                {"x-dead-letter-exchange", "payments-retry" },
+                {"x-dead-letter-exchange", "orders-payments-retry" },
                 {"x-dead-letter-routing-key", "retry" }
             };
 
@@ -84,38 +88,39 @@ namespace PaymentService.Messaging
                 exchange: ExchangeName,
                 routingKey: "");
 
+
             // declare retry exchange and queue and bind queue to exchange
-            _channel.ExchangeDeclare("payments-retry", ExchangeType.Direct, durable: true);
+            _channel.ExchangeDeclare("orders-payments-retry", ExchangeType.Direct, durable: true);
 
             var retryArgs = new Dictionary<string, object>
             {
                 {"x-message-ttl", 10000 },
-                {"x-dead-letter-exchange", "orders"}
+                {"x-dead-letter-exchange", "payments"}
             };
 
             _channel.QueueDeclare(
-                "payments-retry-10s",
+                "orders-payments-retry-10s",
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: retryArgs);
 
             _channel.QueueBind(
-                queue: "payments-retry-10s",
-                exchange: "payments-retry",
+                queue: "orders-payments-retry-10s",
+                exchange: "orders-payments-retry",
                 routingKey: "retry");
 
             // declare dlx and dlq
-            _channel.ExchangeDeclare("payments-dlx", ExchangeType.Fanout, durable: true);
+            _channel.ExchangeDeclare("orders-payments-dlx", ExchangeType.Fanout, durable: true);
             _channel.QueueDeclare(
-                "payment-service-dlq",
+                "orders-payments-dlq",
                 durable: true,
                 exclusive: false,
                 autoDelete: false);
 
             _channel.QueueBind(
-                queue: "payment-service-dlq",
-                exchange: "payments-dlx",
+                queue: "orders-payments-dlq",
+                exchange: "orders-payments-dlx",
                 routingKey: "");
         }
 
@@ -130,7 +135,9 @@ namespace PaymentService.Messaging
                     var body = ea.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
 
-                    var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
+                    var evt = JsonSerializer.Deserialize<PaymentCompletedEvent>(json);
+
+                    _logger.LogInformation($"Received MessageId: {evt?.MessageId} at {DateTime.UtcNow}");
                     if (evt == null)
                     {
                         _channel.BasicReject(ea.DeliveryTag, requeue: false);
@@ -148,7 +155,7 @@ namespace PaymentService.Messaging
                     if (retryCount > 1)
                     {
                         _channel.BasicPublish(
-                            "payments-dlx",
+                            "orders-payments-dlx",
                             "",
                             ea.BasicProperties,
                             ea.Body);
@@ -157,6 +164,7 @@ namespace PaymentService.Messaging
                     }
                     else
                     {
+                        // send it to the retry queue
                         _channel.BasicReject(ea.DeliveryTag, requeue: false);
                     }
                 }
@@ -170,63 +178,37 @@ namespace PaymentService.Messaging
             return Task.CompletedTask;
         }
 
-        private async Task HandleEvent(OrderCreatedEvent evt)
+        private async Task HandleEvent(PaymentCompletedEvent evt)
         {
             using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
 
-            var alreadyProcessed = await db.ProcessedOrders
+            var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+            var orderLogic = scope.ServiceProvider.GetRequiredService<OrderLogic>();
+
+            var alreadyProcessed = await db.ProcessedMessages
                 .AnyAsync(message => message.MessageId == evt.MessageId);
 
             if (alreadyProcessed)
             {
-                _logger.LogInformation("Order already processed");
+                // message has already been processed
+                _logger.LogInformation("message has already been processed");
                 return;
             }
 
-            // expire old payments
-            foreach (var p in db.Payments.Where(
-                p => p.PaymentId != evt.PaymentId &&
-                    p.Status != PaymentStatus.Paid
-                ))
-            {
-                p.Status = PaymentStatus.Expired;
-            }
+            var cart = await orderLogic.GetCartAsync(evt.UserId);
+            if (!cart.Items.Any())
+                throw new BadRequestException("Cart is empty");
 
-            var payment = new PaymentModel
-            {
-                PaymentId = evt.PaymentId,
-                OrderId = evt.OrderId,
-                UserId = evt.UserId,
-                TotalPrice = evt.TotalPrice,
-                Status = PaymentStatus.Pending,
-                Items = evt.Items.Select(i => new PaymentItem
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.ProductName,
-                    Quantity = i.Quantity,
-                    UnitPrice = i.UnitPrice
-                }).ToList()
-            };
+            // empty cart
+            cart.Items.Clear();
 
-            var processedOrder = new ProcessedOrder
+            db.ProcessedMessages.Add(new ProcessedMessage
             {
                 MessageId = evt.MessageId,
                 ProcessedAt = DateTime.UtcNow
-            };
+            });
 
-            try
-            {
-                db.Payments.Add(payment);
-                db.ProcessedOrders.Add(processedOrder);
-
-                await db.SaveChangesAsync();
-            } 
-                catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex.ToString());
-                throw;
-            }
+            await db.SaveChangesAsync();
         }
 
         private int GetRetryCount(BasicDeliverEventArgs ea)
@@ -244,3 +226,4 @@ namespace PaymentService.Messaging
         }
     }
 }
+

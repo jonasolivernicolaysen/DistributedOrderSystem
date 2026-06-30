@@ -1,42 +1,42 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "./AuthContext"
 
 function Navbar() {
+    // check if user is logged in by validating jwt
+    const { isLoggedIn } = useAuth();
+    const { logout } = useAuth();
+
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div className="container justify-content-center">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark p-1">
+            <div className="container position-relative" style={{ minHeight: "48px"}}>
+                {isLoggedIn && (
+                    <>
+                        <div className="navbar-nav flex-row gap-4 justify-content-center w-100">
+                            <Link className="nav-link" to="/products">
+                                <i className="bi bi-box-seam"></i>
+                            </Link>
 
-                <ul className="navbar-nav">
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/register">
-                            Register
-                        </Link>
-                    </li>
+                            <Link className="nav-link" to="/cart">
+                                <i className="bi bi-cart3"></i>
+                            </Link>
 
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/login">
-                            Login
-                        </Link>
-                    </li>
+                            <Link className="nav-link" to="/profile">
+                                <i className="bi bi-person-circle"></i>
+                            </Link>
+                        </div>
 
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/products">
-                            Products
-                        </Link>
-                    </li>
+                        <div className="position-absolute end-0 me-3">
+                            <Link className="nav-link text-white" onClick={logout} to="/login">
+                                <i className="bi-box-arrow-right"></i>
+                            </Link>
+                        </div>
+                    </>
+                )}
 
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/cart">
-                            Cart
-                        </Link>
-                    </li>
-
-                    <li className="nav-item mx-2">
-                        <Link className="nav-link" to="/profile">
-                            Profile
-                        </Link>
-                    </li>
-                </ul>
-
+                {!isLoggedIn && (
+                    <div className="navbar-nav flex-row gap-3 ms-auto">
+                    </div>
+                )}
             </div>
         </nav>
     );

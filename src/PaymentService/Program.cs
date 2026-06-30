@@ -17,8 +17,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<PaymentDbContext>(options => 
-    options.UseSqlite("Data source=payments.db"));
+builder.Services.AddDbContext<PaymentDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<PaymentLogic>();
 builder.Services.AddHostedService<OrderCreatedConsumer>();
@@ -57,6 +58,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
+
+// apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace AuthService.Controllers
 {
@@ -12,10 +13,17 @@ namespace AuthService.Controllers
     public class PaymentProxyController : ControllerBase
     {
         private readonly HttpClient _httpClient;
+        private ILogger<PaymentProxyController> _logger;
+        private readonly string _paymentServiceUrl;
 
-        public PaymentProxyController(HttpClient httpClient)
+        public PaymentProxyController(
+            HttpClient httpClient,
+            ILogger<PaymentProxyController> logger,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _logger = logger;
+            _paymentServiceUrl = configuration["Services:PaymentService"];
         }
 
 
@@ -24,7 +32,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "https://localhost:7068/api/payments");
+                $"{_paymentServiceUrl}/api/payments");
 
             // forward the body
             var json = JsonSerializer.Serialize(dto);
@@ -46,7 +54,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7068/api/payments/{paymentId}");
+                $"{_paymentServiceUrl}/api/payments/{paymentId}");
 
             // forward jwt token
             var token = Request.Headers["Authorization"].ToString();
@@ -55,7 +63,7 @@ namespace AuthService.Controllers
             var response = await _httpClient.SendAsync(request);
 
             var content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(content);
+            _logger.LogInformation(content);
 
             return StatusCode((int)response.StatusCode, content);
         }

@@ -12,10 +12,14 @@ namespace AuthService.Controllers
     public class InventoryProxyController : ControllerBase
     {
         private readonly HttpClient _httpClient;
+        private readonly string _inventoryServiceUrl;
 
-        public InventoryProxyController(HttpClient httpClient)
+        public InventoryProxyController(
+            HttpClient httpClient,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _inventoryServiceUrl = configuration["Services:InventoryService"];
         }
 
 
@@ -24,7 +28,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Put,
-                $"https://localhost:7248/api/inventory/{productId}");
+                $"{_inventoryServiceUrl}/api/inventory/{productId}");
 
             // forward the body
             var json = JsonSerializer.Serialize(dto);
@@ -46,7 +50,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7248/api/inventory/");
+                $"{_inventoryServiceUrl}/api/inventory/");
 
             // forward jwt token
             var token = Request.Headers["Authorization"].ToString();
@@ -64,7 +68,7 @@ namespace AuthService.Controllers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"https://localhost:7248/api/inventory/{productId}");
+                $"{_inventoryServiceUrl}/api/inventory/{productId}");
 
             // forward jwt token
             var token = Request.Headers["Authorization"].ToString();

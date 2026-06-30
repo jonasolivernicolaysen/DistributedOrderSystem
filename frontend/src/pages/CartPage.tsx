@@ -1,140 +1,171 @@
-import { useEffect, useState } from "react"; 
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { apiFetch } from "../services/api"
+ 
+interface CartItem {
+    productId: string;
+    name: string;
+    description: string;
+    unitPrice: number;
+    quantity: number;
+}
 
 function CartPage() {
-    // state
-    interface CartItem {
-        productId: string,
-        name: string,
-        description: string,
-        unitPrice: number,
-        quantity: number
-    }
     const [products, setProducts] = useState<CartItem[]>([]);
     const navigate = useNavigate();
 
-    // functions
-
-    // get cart items from backend
-    const getCartItems = async () => {
-        try {
-            // get token
-            const token = localStorage.getItem("token");
-
-            // send request to authservice getcart endpoint
-            const response = await fetch(
-                "https://localhost:7144/api/orders/cart",
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-
-            if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
-                return;
-            }
-            const data = await response.json();
-
-            // fetches the items instead of the cart 
-            setProducts(data.items);
-
-        } catch (error) {
-            console.error(error);
-            alert("Could not connect to the server");
-        }
-    }
 
     const checkout = async () => {
         try {
-            // get token
-            const token = localStorage.getItem("token");
-
-            // send request to authservice getcart endpoint
-            const response = await fetch(
-                "https://localhost:7144/api/orders/cart/checkout",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
+            const jwt = localStorage.getItem("jwt");
+            const response = await apiFetch("http://localhost:7144/api/orders/cart/checkout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${jwt}`
+                }
+            });
 
             if (!response.ok) {
-                alert(`Request failed: ${response.status}`);
+                toast.error(`Request failed: ${response.status}`);
                 return;
             }
-            const data = await response.json();
-            console.log(data);
-            navigate(`/payments/${data.paymentId}`)
-            return data;
 
-            // fetches the items instead of the cart 
+            const data = await response.json();
+            navigate(`/payments/${data.paymentId}`);
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
-    }
+    };
+
+    const totalPrice = products.reduce(
+        (sum, item) => sum + item.unitPrice * item.quantity, 0
+    );
+
+    const getCartItems = async () => {
+        try {
+            const jwt = localStorage.getItem("jwt");
+            const response = await apiFetch("http://localhost:7144/api/orders/cart", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${jwt}`
+                }
+            });
+
+            if (!response.ok) {
+                toast.error(`Request failed: ${response.status}`);
+                return;
+            }
+
+            const data = await response.json();
+            setProducts(data.items);
+        } catch (error) {
+            console.error(error);
+            toast.error("Could not connect to the server");
+        }
+    };
+
+    const deleteItem = async (productId: string) => {
+        const jwt = localStorage.getItem("jwt");
+        const response = await apiFetch(`http://localhost:7144/api/orders/cart/${productId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${jwt}`
+            }
+        });
+
+        if (!response.ok) {
+            toast.error(`Request failed: ${response.status}`);
+            return;
+        }
+
+        getCartItems();
+    };
 
     useEffect(() => {
         getCartItems();
-    }, [])
+    }, []);
 
-    // return html
     return (
-        <div>
-            <h1>Cart</h1>
+        <div className="container mt-4">
 
-            <div className="row fw-bold border-bottom pb-2 mb-3">
-                <div className="col-md-4">Name</div>
-                <div className="col-md-2">Price</div>
-                <div className="col-md-2">Quantity</div>
-                <div className="col-md-4 text-end">Sum</div>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">Cart</h4>
+                <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => navigate("/products")}
+                >
+                    ← Back to Products
+                </button>
             </div>
-            
-            <div className="container mt-4">
-                <div className="row">
+
+            {products.length === 0 && (
+                <div className="text-center py-5 text-muted">
+                    <p className="mb-2">Your cart is empty.</p>
+                    <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => navigate("/products")}
+                    >
+                        Browse Products
+                    </button>
+                </div>
+            )}
+
+            {products.length > 0 && (
+                <>
+                    <div className="row fw-semibold text-muted small border-bottom pb-2 mb-2 px-2">
+                        <div className="col-5">Product</div>
+                        <div className="col-2 text-end">Price</div>
+                        <div className="col-2 text-center">Qty</div>
+                        <div className="col-3 text-end">Subtotal</div>
+                    </div>
+
                     {products.map((item: CartItem) => (
-                        <div
-                            key={item.productId}
-                            className="border rounded p-3 mb-3 shadow-sm"
-                        >
-                            <div className="row align-items-center">
-
-                                <div className="col-md-4">
-                                    <strong>{item.name}</strong>
-                                </div>
-
-                                <div className="col-md-2">
-                                    {item.unitPrice} 
-                                </div>
-
-                                <div className="col-md-2">
-                                    {item.quantity}
-                                </div>
-
-                                <div className="col-md-4 text-end">
-                                    <strong>
-                                        {(item.unitPrice * item.quantity).toFixed(2)}
-                                    </strong>
-                                </div>
-
+                        <div key={item.productId} className="row align-items-center border-bottom py-3 px-2">
+                            <div className="col-5">
+                                <span className="fw-semibold">{item.name}</span>
+                                <button
+                                    className="btn btn-outline-danger btn-sm ms-2"
+                                    onClick={() => deleteItem(item.productId)}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                            <div className="col-2 text-end text-muted small">
+                                ${item.unitPrice.toFixed(2)}
+                            </div>
+                            <div className="col-2 text-center text-muted small">
+                                {item.quantity}
+                            </div>
+                            <div className="col-3 text-end fw-semibold">
+                                ${(item.unitPrice * item.quantity).toFixed(2)}
                             </div>
                         </div>
                     ))}
-                </div>
-            </div>
-            <p>Total sum: </p>
-            <button
-                onClick={() => {
-                    checkout();
-                }}
-            >Checkout</button>
+
+                    
+                    <div className="d-flex justify-content-between align-items-center mt-4">
+                        <span className="text-muted small">
+                            {products.length} item{products.length !== 1 ? "s" : ""}
+                        </span>
+                        <div className="d-flex align-items-center gap-3">
+                            <span className="fw-semibold">Total: ${totalPrice.toFixed(2)}</span>
+                            <button
+                                className="btn btn-primary btn-sm"
+                                onClick={checkout}
+                            >
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
-    )
+    );
 }
 
 export default CartPage;

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -50,7 +51,11 @@ namespace AuthService.Services
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             if (!result.Succeeded)
-                return (result, null);
+            {
+                throw new BadRequestException(
+                    string.Join(", ", result.Errors.Select(e => e.Description))
+                );
+            }
 
             var roleResult = await _userManager.AddToRoleAsync(user, Roles.User.ToString());
 
@@ -65,11 +70,18 @@ namespace AuthService.Services
 
         public async Task<SignInResult> LoginUserAsync(LoginRequestDto dto)
         {
-            return await _signInManager.PasswordSignInAsync(
+            var result = await _signInManager.PasswordSignInAsync(
                 dto.Username,
                 dto.Password,
                 isPersistent: false,
                 lockoutOnFailure: true);
+
+            if (result.IsLockedOut)
+                throw new BadRequestException("Account is locked");
+
+            if (!result.Succeeded)
+                throw new BadRequestException("Invalid username or password");
+            return result;
         }
 
         public async Task<RefreshResult> RefreshAsync(RefreshTokenDto dto)

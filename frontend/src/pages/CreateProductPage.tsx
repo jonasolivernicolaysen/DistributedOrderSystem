@@ -1,102 +1,105 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"
+import { apiFetch } from "../services/api"
 
 function CreateProductPage() {
-    // state
-
     const [productName, setProductName] = useState("");
     const [productDescription, setProductDescription] = useState("");
-    const [productPrice, setProductPrice] = useState(0);
+    const [productPrice, setProductPrice] = useState<number | "">("");
 
     const navigate = useNavigate();
 
-    // functions
     const addProductListing = async () => {
         try {
-            const token = localStorage.getItem("token");
-
-            const response = await fetch(
-                "https://localhost:7144/api/products",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        name: productName,
-                        description: productDescription,
-                        price: productPrice
-                    })
-                });
-            console.log(JSON.stringify({
-                name: productName,
-                description: productDescription,
-                price: productPrice
-            }))
+            const jwt = localStorage.getItem("jwt");
+            const response = await apiFetch("http://localhost:7144/api/products", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${jwt}`
+                },
+                body: JSON.stringify({
+                    name: productName,
+                    description: productDescription,
+                    price: productPrice
+                })
+            });
 
             if (!response.ok) {
                 const error = await response.json();
-                alert(error.error);
+                toast.error(error.error);
                 return;
             }
-            alert("Product listing added successfully");
-            navigate("/products")
+
+            toast.success("Product listing added successfully");
+            navigate("/products");
         } catch (error) {
             console.error(error);
-            alert("Could not connect to the server");
+            toast.error("Could not connect to the server");
         }
     };
 
-    // UI
     return (
-        <div className="container mt-5">
+        <div className="container mt-4">
             <div className="row justify-content-center">
                 <div className="col-md-4">
 
-                    <div className="card shadow">
-                        <div className="card-body">
+                    <button
+                        className="btn btn-link ps-0 mb-3 text-decoration-none text-muted"
+                        onClick={() => navigate("/products")}
+                    >
+                        ← Back to Products
+                    </button>
 
-                            <h2 className="text-center mb-4">
-                                Create Product
-                            </h2>
+                    <div className="card shadow-sm">
+                        <div className="card-body">
+                            <h5 className="card-title mb-4">Create Product</h5>
 
                             <div className="mb-3">
+                                <label className="form-label small fw-semibold">Name</label>
                                 <input
                                     className="form-control"
                                     value={productName}
                                     onChange={(e) => setProductName(e.target.value)}
                                     type="text"
-                                    placeholder="Name"
+                                    placeholder="e.g. Wireless Headphones"
                                 />
                             </div>
 
                             <div className="mb-3">
-                                <input
+                                <label className="form-label small fw-semibold">Description</label>
+                                <textarea
                                     className="form-control"
                                     value={productDescription}
                                     onChange={(e) => setProductDescription(e.target.value)}
-                                    type="text"
-                                    placeholder="Description"
+                                    placeholder="Brief product description"
+                                    rows={3}
                                 />
                             </div>
 
-                            <div className="mb-3">
-                                <input
-                                    className="form-control"
-                                    value={productPrice}
-                                    onChange={(e) => setProductPrice(Number(e.target.value))}
-                                    type="number"
-                                />
+                            <div className="mb-4">
+                                <label className="form-label small fw-semibold">Price</label>
+                                <div className="input-group">
+                                    <span className="input-group-text">$</span>
+                                    <input
+                                        className="form-control"
+                                        value={productPrice}
+                                        onChange={(e) => setProductPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                                        type="number"
+                                        placeholder="1.00"
+                                        min={1}
+                                        step={0.01}
+                                    />
+                                </div>
                             </div>
 
                             <button
                                 className="btn btn-primary w-100"
-                                onClick={() => {
-                                    addProductListing();
-                                }}
+                                onClick={addProductListing}
+                                disabled={!productName || !productDescription || productPrice === ""}
                             >
-                                Add
+                                Add Product
                             </button>
                         </div>
                     </div>
