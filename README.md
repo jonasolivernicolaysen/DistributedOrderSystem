@@ -194,6 +194,7 @@ Frontend
 - React
 - TypeScript
 - Vite
+- Bootstrap
 
 Infrastructure
 
