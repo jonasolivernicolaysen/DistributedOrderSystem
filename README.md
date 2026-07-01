@@ -7,7 +7,6 @@ While making this i focused on reliable messaging, service autonomy, and eventua
 ---
 
 # Architecture
-
 The system consists of the following services:
 
 - AuthService
@@ -18,8 +17,32 @@ The system consists of the following services:
 - RabbitMQ
 - React Frontend
 
+![Architecture](assets/architecture_overview.png)
+
 Each service owns its own SQLite database and communicates either through RabbitMQ events or HTTP APIs when synchronous communication is required.
 
+---
+## Pages
+### Register page
+![Frontend](assets/register.png)
+---
+### Login page
+![Frontend](assets/login.png)
+---
+### Products page for viewing products and adding them to your shopping cart
+![Frontend](assets/products.png)
+---
+### If you click the "+ Add listing button", you get redirected to this page
+![Frontend](assets/create_product_listing.png)
+---
+### Cart page for viewing your cart before proceeding to payment
+![Frontend](assets/cart.png)
+---
+### Payment page for completing the payment: you get redirected to /products after completion
+![Frontend](assets/payment.png)
+---
+### Profile page for viewing profile details and making changes to your product listings
+![Frontend](assets/profile.png)
 ---
 
 # Services
@@ -94,33 +117,8 @@ Features:
 # Messaging
 
 RabbitMQ is used for asynchronous communication between services.
-
-Event flow:
-
-```text
-ProductService
-        │
-        ▼
-Product(Created / Updated / Deleted)Event
-        │
-        ▼
-InventoryService (ProductEventsConsumer)
-
-
-OrderService
-        │
-        ▼
-OrderCreatedEvent
-        │
-        ▼
-PaymentService
-        │
-        ▼
-PaymentCompletedEvent
-        │
-        ▼
-InventoryService (PaymentCompletedConsumer)
-```
+### Here is an overview of RabbitMQ management:
+![Messaging](assets/rabbitmq.png)
 
 ---
 
@@ -132,7 +130,7 @@ The project is designed around at-least-once message delivery.
 
 Services publishing events first store them in an Outbox table inside the same database transaction.
 
-A background worker publishes events to RabbitMQ and marks them as processed only after successful delivery.
+Background workers periodically query their respective databases for unprocessed events. If found, they publish that event to RabbitMQ and marks them as processed only after successful delivery.
 
 Implemented in:
 
@@ -154,7 +152,7 @@ Consumers store processed message IDs to ensure duplicate deliveries are ignored
 
 RabbitMQ messages are acknowledged only after successful processing.
 
-Failed messages are retried automatically.
+Failed messages are retried automatically. After 3 failed attempts they are sent to their respective DLQ.
 
 ---
 
