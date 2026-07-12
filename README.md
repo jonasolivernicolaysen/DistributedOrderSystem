@@ -270,15 +270,7 @@ Start the application:
 ```bash
 docker compose up --build
 ```
+Open your browser and navigate to http://localhost:5173
 
-The following services will start automatically:
+PS: Building the application may take several minutes
 
-- RabbitMQ
-- AuthService
-- ProductService
-- InventoryService
-- OrderService
-- PaymentService
-- Frontend
-
----
