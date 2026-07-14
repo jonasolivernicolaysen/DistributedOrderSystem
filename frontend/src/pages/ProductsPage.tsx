@@ -76,8 +76,12 @@ function ProductsPage() {
         showProducts();
     }, []);
 
+    const handleContainerClick = () => {
+        if (expandedProduct) setExpandedProduct(null);
+    };
+
     return (
-        <div className="container mt-4 pb-5">
+        <div className="container mt-4 pb-5" onClick={handleContainerClick}>
 
             {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -112,7 +116,10 @@ function ProductsPage() {
                             <div
                                 className={`card shadow-sm ${isExpanded ? "border-primary" : ""}`}
                                 style={{ cursor: "pointer" }}
-                                onClick={() => setExpandedProduct(isExpanded ? null : product.productId)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedProduct(isExpanded ? null : product.productId)
+                                }}
                             >
                                 <div className="card-body">
                                     <h6 className="card-title mb-1">{product.name}</h6>

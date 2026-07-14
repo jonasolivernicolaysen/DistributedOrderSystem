@@ -118,22 +118,17 @@ function CartPage() {
             {products.length > 0 && (
                 <>
                     <div className="row fw-semibold text-muted small border-bottom pb-2 mb-2 px-2">
-                        <div className="col-5">Product</div>
+                        <div className="col-4">Product</div>
                         <div className="col-2 text-end">Price</div>
                         <div className="col-2 text-center">Qty</div>
-                        <div className="col-3 text-end">Subtotal</div>
+                        <div className="col-2 text-end">Subtotal</div>
+                        <div className="col-2"></div>
                     </div>
 
                     {products.map((item: CartItem) => (
                         <div key={item.productId} className="row align-items-center border-bottom py-3 px-2">
-                            <div className="col-5">
+                            <div className="col-4">
                                 <span className="fw-semibold">{item.name}</span>
-                                <button
-                                    className="btn btn-outline-danger btn-sm ms-2"
-                                    onClick={() => deleteItem(item.productId)}
-                                >
-                                    Delete
-                                </button>
                             </div>
                             <div className="col-2 text-end text-muted small">
                                 ${item.unitPrice.toFixed(2)}
@@ -141,8 +136,16 @@ function CartPage() {
                             <div className="col-2 text-center text-muted small">
                                 {item.quantity}
                             </div>
-                            <div className="col-3 text-end fw-semibold">
+                            <div className="col-2 text-end fw-semibold">
                                 ${(item.unitPrice * item.quantity).toFixed(2)}
+                            </div>
+                            <div className="col-2 text-end">
+                                <button
+                                    className="btn btn-outline-danger btn-sm"
+                                    onClick={() => deleteItem(item.productId)}
+                                >
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     ))}

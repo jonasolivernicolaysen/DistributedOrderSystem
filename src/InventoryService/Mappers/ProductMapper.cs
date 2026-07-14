@@ -14,7 +14,8 @@ namespace InventoryService.Mappers
                 ProductName = productCreatedEvent.ProductName,
                 Description = productCreatedEvent.Description,
                 Price = productCreatedEvent.Price,
-                Stock = 0
+                // Initialize products with stock to improve UX when app is in development
+                Stock = 100
             };
         }
         public static InventoryModel ProductUpdatedEventToInventoryModel(ProductUpdatedEvent productUpdatedEvent)
