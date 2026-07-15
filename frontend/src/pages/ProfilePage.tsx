@@ -96,6 +96,10 @@ function ProfilePage() {
         setProducts(products.filter(p => p.productId !== productId));
     };
 
+    const handleContainerClick = () => {
+        if (selectedProduct) setSelectedProduct(null);
+    };
+
     useEffect(() => {
         const getUserDetails = async () => {
             const jwt = localStorage.getItem("jwt");
@@ -141,7 +145,7 @@ function ProfilePage() {
     }, []);
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-4" onClick={handleContainerClick}>
 
             {/* Profile header */}
             <div className="card shadow-sm mb-4">
@@ -179,7 +183,10 @@ function ProfilePage() {
                             <div
                                 className={`card shadow-sm ${isSelected ? "border-primary" : ""}`}
                                 style={{ cursor: "pointer" }}
-                                onClick={() => setSelectedProduct(isSelected ? null : product)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedProduct(isSelected ? null : product);
+                                }}
                             >
                                 <div className="card-body">
                                     <h6 className="card-title mb-1">{product.name}</h6>
