@@ -272,5 +272,5 @@ docker compose up --build
 ```
 Open your browser and navigate to http://localhost:5173
 
-PS: Building the application may take several minutes
+PS: Building the application may take several minutes. Make sure the docker daemon is running.
 
